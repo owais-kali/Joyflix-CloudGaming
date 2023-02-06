@@ -151,6 +151,7 @@ VulkanBase::VulkanBase(bool enableValidation) {
 
     commandLineParser.parse(args);
 }
+VulkanBase::~VulkanBase(){}
 
 bool VulkanBase::initVulkan()
 {
@@ -217,6 +218,43 @@ bool VulkanBase::initVulkan()
     }
 #endif
 
+    physicalDevice = physicalDevices[selectedDevice];
+
+    // Store properties (including limits), features and memory properties of the physical device (so that examples can check against them)
+    vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+    vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
+
+    // Derived examples can override this to set actual features (based on above readings) to enable for logical device creation
+    getEnabledFeatures();
+
+    // Vulkan device creation
+    // This is handled by a separate class that gets a logical device representation
+    // and encapsulates functions related to a device
+    vulkanDevice = new vks::VulkanDevice(physicalDevice);
+
     return true;
 }
+
+void VulkanBase::render(){};
+/** @brief (Virtual) Called when the camera view has changed */
+void VulkanBase::viewChanged(){};
+/** @brief (Virtual) Called after a key was pressed, can be used to do custom key handling */
+void VulkanBase::keyPressed(uint32_t){};
+/** @brief (Virtual) Called after the mouse cursor moved and before internal events (like camera rotation) is handled */
+void VulkanBase::mouseMoved(double x, double y, bool &handled){};
+/** @brief (Virtual) Called when the window has been resized, can be used by the sample application to recreate resources */
+void VulkanBase::windowResized(){};
+/** @brief (Virtual) Called when resources have been recreated that require a rebuild of the command buffers (e.g. frame buffer), to be implemented by the sample application */
+void VulkanBase::buildCommandBuffers(){};
+/** @brief (Virtual) Setup default depth and stencil views */
+void VulkanBase::setupDepthStencil(){};
+/** @brief (Virtual) Setup default framebuffers for all requested swapchain images */
+void VulkanBase::setupFrameBuffer(){};
+/** @brief (Virtual) Setup a default renderpass */
+void VulkanBase::setupRenderPass(){};
+/** @brief (Virtual) Called after the physical device features have been read, can be used to set features to enable on the device */
+void VulkanBase::getEnabledFeatures(){};
+/** @brief (Virtual) Called after the physical device extensions have been read, can be used to enable extensions based on the supported extension listing*/
+void VulkanBase::getEnabledExtensions(){};
 

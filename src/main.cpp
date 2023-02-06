@@ -4,7 +4,28 @@ class VulkanApp : public VulkanBase{
 public:
     VulkanApp() : VulkanBase(true)
     {
+    }
+    ~VulkanApp(){}
 
+    void draw(){}
+    void updateUniformBuffers(){}
+
+    virtual void render()
+    {
+        if (!prepared)
+            return;
+        vkDeviceWaitIdle(device);
+        draw();
+        vkDeviceWaitIdle(device);
+        if (!paused)
+        {
+            updateUniformBuffers();
+        }
+    }
+
+    virtual void viewChanged()
+    {
+        updateUniformBuffers();
     }
 };
 

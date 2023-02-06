@@ -53,6 +53,7 @@
 
 #include "CommandLineParser.hpp"
 #include "VulkanTools.h"
+#include "VulkanDevice.h"
 
 class VulkanBase {
 
@@ -72,6 +73,8 @@ public:
     /** @brief Last frame time measured using a high performance timer (if available) */
     float frameTimer = 1.0f;
 
+    /** @brief Encapsulated physical and logical vulkan device */
+    vks::VulkanDevice *vulkanDevice;
     /** @brief Example settings that can be changed e.g. by command line arguments */
     struct Settings {
         /** @brief Activates validation layers (and message output) when set to true */
@@ -87,6 +90,13 @@ public:
     VkClearColorValue defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 
     static std::vector<const char*> args;
+    // Defines a frame rate independent timer value clamped from -1.0...1.0
+    // For use in animations, rotations, etc.
+    float timer = 0.0f;
+    // Multiplier for speeding up (or slowing down) the global timer
+    float timerSpeed = 0.25f;
+    bool paused = false;
+
 protected:
     // Returns the path to the root of the glsl or hlsl shader directory.
     std::string getShadersPath() const;
@@ -154,6 +164,31 @@ protected:
 
 public:
     VulkanBase(bool enableValidation);
+    virtual ~VulkanBase();
+    /** @brief Setup the vulkan instance, enable required extensions and connect to the physical device (GPU) */
     bool initVulkan();
-    VkResult createInstance(bool enableValidation);
+    /** @brief (Virtual) Creates the application wide Vulkan instance */
+    virtual VkResult createInstance(bool enableValidation);
+    /** @brief (Pure virtual) Render function to be implemented by the sample application */
+    virtual void render() = 0;
+    /** @brief (Virtual) Called when the camera view has changed */
+    virtual void viewChanged();
+    /** @brief (Virtual) Called after a key was pressed, can be used to do custom key handling */
+    virtual void keyPressed(uint32_t);
+    /** @brief (Virtual) Called after the mouse cursor moved and before internal events (like camera rotation) is handled */
+    virtual void mouseMoved(double x, double y, bool &handled);
+    /** @brief (Virtual) Called when the window has been resized, can be used by the sample application to recreate resources */
+    virtual void windowResized();
+    /** @brief (Virtual) Called when resources have been recreated that require a rebuild of the command buffers (e.g. frame buffer), to be implemented by the sample application */
+    virtual void buildCommandBuffers();
+    /** @brief (Virtual) Setup default depth and stencil views */
+    virtual void setupDepthStencil();
+    /** @brief (Virtual) Setup default framebuffers for all requested swapchain images */
+    virtual void setupFrameBuffer();
+    /** @brief (Virtual) Setup a default renderpass */
+    virtual void setupRenderPass();
+    /** @brief (Virtual) Called after the physical device features have been read, can be used to set features to enable on the device */
+    virtual void getEnabledFeatures();
+    /** @brief (Virtual) Called after the physical device extensions have been read, can be used to enable extensions based on the supported extension listing*/
+    virtual void getEnabledExtensions();
 };
