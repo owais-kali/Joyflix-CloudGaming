@@ -8,6 +8,7 @@ project(
 cmake_policy(SET CMP0076 NEW)
 
 find_package(CUDA REQUIRED)
+
 find_package(Vulkan REQUIRED)
 add_subdirectory(NvCodec)
 
