@@ -54,6 +54,7 @@
 #include "CommandLineParser.hpp"
 #include "VulkanTools.h"
 #include "VulkanDevice.h"
+#include "VulkanSwapChain.h"
 
 class VulkanBase {
 
@@ -151,7 +152,7 @@ protected:
     VkPipelineCache pipelineCache;
     // Wraps the swap chain to present images (framebuffers) to the windowing system
 
-    //VulkanSwapChain swapChain;
+    VulkanSwapChain swapChain;
 
     // Synchronization semaphores
     struct {

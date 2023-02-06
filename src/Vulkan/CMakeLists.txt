@@ -14,7 +14,9 @@ target_sources(VulkanBase
         VulkanDevice.cpp
         VulkanDevice.h
         VulkanBuffer.cpp
-        VulkanBuffer.h)
+        VulkanBuffer.h
+        VulkanSwapChain.cpp
+        VulkanSwapChain.h)
 find_package(Vulkan REQUIRED)
 
 target_link_libraries(VulkanBase

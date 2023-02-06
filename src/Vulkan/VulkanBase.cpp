@@ -233,6 +233,25 @@ bool VulkanBase::initVulkan()
     // and encapsulates functions related to a device
     vulkanDevice = new vks::VulkanDevice(physicalDevice);
 
+    // Derived examples can enable extensions based on the list of supported extensions read from the physical device
+    getEnabledExtensions();
+
+    VkResult res = vulkanDevice->createLogicalDevice(enabledFeatures, enabledDeviceExtensions, deviceCreatepNextChain);
+    if (res != VK_SUCCESS) {
+        vks::tools::exitFatal("Could not create Vulkan device: \n" + vks::tools::errorString(res), res);
+        return false;
+    }
+    device = vulkanDevice->logicalDevice;
+
+    // Get a graphics queue from the device
+    vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.graphics, 0, &queue);
+
+    // Find a suitable depth format
+    VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &depthFormat);
+    assert(validDepthFormat);
+
+    swapChain.connect(instance, physicalDevice, device);
+
     return true;
 }
 
