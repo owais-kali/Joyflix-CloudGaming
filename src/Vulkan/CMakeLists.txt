@@ -9,7 +9,8 @@ target_sources(VulkanBase
         VulkanBase.h
         VulkanTools.cpp
         VulkanTools.h
-        VulkanInitializers.hpp)
+        VulkanInitializers.hpp
+        CommandLineParser.hpp)
 
 find_package(Vulkan REQUIRED)
 

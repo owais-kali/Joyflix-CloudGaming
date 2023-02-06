@@ -51,6 +51,7 @@
 
 #include "vulkan/vulkan.h"
 
+#include "CommandLineParser.hpp"
 #include "VulkanTools.h"
 
 class VulkanBase {
@@ -59,10 +60,22 @@ class VulkanBase {
     std::string name = "vulkanExample";
     uint32_t apiVersion = VK_API_VERSION_1_0;
 
+public:
+    bool prepared = false;
+    bool resized = false;
+    bool viewUpdated = false;
+    uint32_t width = 1280;
+    uint32_t height = 720;
+
+    CommandLineParser commandLineParser;
+
+    /** @brief Last frame time measured using a high performance timer (if available) */
+    float frameTimer = 1.0f;
+
     /** @brief Example settings that can be changed e.g. by command line arguments */
     struct Settings {
         /** @brief Activates validation layers (and message output) when set to true */
-        bool validation = false;
+        bool validation = true;
         /** @brief Set to true if fullscreen mode has been requested via command line */
         bool fullscreen = false;
         /** @brief Set to true if v-sync will be forced for the swapchain */
@@ -70,6 +83,10 @@ class VulkanBase {
         /** @brief Enable UI overlay */
         bool overlay = true;
     } settings;
+
+    VkClearColorValue defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
+
+    static std::vector<const char*> args;
 protected:
     // Returns the path to the root of the glsl or hlsl shader directory.
     std::string getShadersPath() const;

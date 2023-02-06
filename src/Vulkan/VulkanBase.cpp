@@ -1,8 +1,6 @@
-//
-// Created by owais on 6/2/23.
-//
-
 #include "VulkanBase.h"
+
+std::vector<const char*> VulkanBase::args;
 
 VkResult VulkanBase::createInstance(bool enableValidation)
 {
@@ -132,7 +130,26 @@ VkResult VulkanBase::createInstance(bool enableValidation)
 }
 
 VulkanBase::VulkanBase(bool enableValidation) {
+    settings.validation = enableValidation;
 
+    // Command line arguments
+    commandLineParser.add("help", { "--help" }, 0, "Show help");
+    commandLineParser.add("validation", { "-v", "--validation" }, 0, "Enable validation layers");
+    commandLineParser.add("vsync", { "-vs", "--vsync" }, 0, "Enable V-Sync");
+    commandLineParser.add("fullscreen", { "-f", "--fullscreen" }, 0, "Start in fullscreen mode");
+    commandLineParser.add("width", { "-w", "--width" }, 1, "Set window width");
+    commandLineParser.add("height", { "-h", "--height" }, 1, "Set window height");
+    commandLineParser.add("shaders", { "-s", "--shaders" }, 1, "Select shader type to use (glsl or hlsl)");
+    commandLineParser.add("gpuselection", { "-g", "--gpu" }, 2, "Select GPU to run on");
+    commandLineParser.add("gpulist", { "-gl", "--listgpus" }, 0, "Display a list of available Vulkan devices");
+    commandLineParser.add("benchmark", { "-b", "--benchmark" }, 0, "Run example in benchmark mode");
+    commandLineParser.add("benchmarkwarmup", { "-bw", "--benchwarmup" }, 1, "Set warmup time for benchmark mode in seconds");
+    commandLineParser.add("benchmarkruntime", { "-br", "--benchruntime" }, 1, "Set duration time for benchmark mode in seconds");
+    commandLineParser.add("benchmarkresultfile", { "-bf", "--benchfilename" }, 1, "Set file name for benchmark results");
+    commandLineParser.add("benchmarkresultframes", { "-bt", "--benchframetimes" }, 0, "Save frame times to benchmark results file");
+    commandLineParser.add("benchmarkframes", { "-bfs", "--benchmarkframes" }, 1, "Only render the given number of frames");
+
+    commandLineParser.parse(args);
 }
 
 bool VulkanBase::initVulkan()
@@ -173,14 +190,6 @@ bool VulkanBase::initVulkan()
     }
 
     // GPU selection
-
-    for (uint32_t i = 0; i < gpuCount; i++) {
-        VkPhysicalDeviceProperties deviceProperties;
-        vkGetPhysicalDeviceProperties(physicalDevices[i], &deviceProperties);
-        std::cout << "Device [" << i << "] : " << deviceProperties.deviceName << std::endl;
-        std::cout << " Type: " << vks::tools::physicalDeviceTypeString(deviceProperties.deviceType) << "\n";
-        std::cout << " API: " << (deviceProperties.apiVersion >> 22) << "." << ((deviceProperties.apiVersion >> 12) & 0x3ff) << "." << (deviceProperties.apiVersion & 0xfff) << "\n";
-    }
 
     // Select physical device to be used for the Vulkan example
     // Defaults to the first device unless specified by command line

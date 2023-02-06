@@ -7,13 +7,18 @@ public:
 
     }
 };
-VulkanApp vulkanApp = {};
+
+VulkanApp* vulkanApp;
 
 void StartVulkanApp(){
-    vulkanApp.initVulkan();
+    vulkanApp->initVulkan();
 }
 
 int main(int argc, char * argv[])
 {
+    for (size_t i = 0; i < argc; i++) { VulkanApp::args.push_back(argv[i]); };
+    vulkanApp = new VulkanApp();
     StartVulkanApp();
+
+    delete(vulkanApp);
 }
