@@ -33,6 +33,8 @@ VulkanApp* vulkanApp;
 
 void StartVulkanApp(){
     vulkanApp->initVulkan();
+    vulkanApp->setupWindow();
+    vulkanApp->prepare();
 }
 
 int main(int argc, char * argv[])

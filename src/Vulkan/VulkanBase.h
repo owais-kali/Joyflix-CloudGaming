@@ -36,10 +36,17 @@
 #include "VulkanSwapChain.h"
 
 class VulkanBase {
+private:
+    std::string getWindowTitle();
+    uint32_t destWidth;
+    uint32_t destHeight;
+    bool resizing = false;
 
     std::string title = "Vulkan Example";
     std::string name = "vulkanExample";
     uint32_t apiVersion = VK_API_VERSION_1_0;
+
+    void initSwapchain();
 
 public:
     bool prepared = false;
@@ -143,11 +150,19 @@ protected:
     std::vector<VkFence> waitFences;
 
 public:
+    bool quit = false;
+    xcb_connection_t *connection;
+    xcb_screen_t *screen;
+    xcb_window_t window;
+    xcb_intern_atom_reply_t *atom_wm_delete_window;
+
     VulkanBase(bool enableValidation);
     virtual ~VulkanBase();
     /** @brief Setup the vulkan instance, enable required extensions and connect to the physical device (GPU) */
     bool initVulkan();
     xcb_window_t setupWindow();
+    void initxcbConnection();
+
     /** @brief (Virtual) Creates the application wide Vulkan instance */
     virtual VkResult createInstance(bool enableValidation);
     /** @brief (Pure virtual) Render function to be implemented by the sample application */
@@ -172,4 +187,7 @@ public:
     virtual void getEnabledFeatures();
     /** @brief (Virtual) Called after the physical device extensions have been read, can be used to enable extensions based on the supported extension listing*/
     virtual void getEnabledExtensions();
+
+    /** @brief Prepares all Vulkan resources and functions required to run the sample */
+    virtual void prepare();
 };
