@@ -17,9 +17,15 @@ target_sources(VulkanBase
         VulkanBuffer.h
         VulkanSwapChain.cpp
         VulkanSwapChain.h)
+
 find_package(Vulkan REQUIRED)
+find_package(Threads REQUIRED)
+find_package(XCB REQUIRED)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_XCB_KHR")
 
 target_link_libraries(VulkanBase
         PRIVATE
         ${Vulkan_LIBRARY}
+        ${XCB_LIBRARIES}
         )
