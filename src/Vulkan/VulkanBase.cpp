@@ -393,13 +393,13 @@ void VulkanBase::initxcbConnection(){
 
 void VulkanBase::initSwapchain()
 {
-
+    swapChain.initSurface(connection, window);
 }
 
 void VulkanBase::prepare()
 {
     if (vulkanDevice->enableDebugMarkers) {
-        vks::debugmarker::setup(device);
+//        vks::debugmarker::setup(device);
     }
     initSwapchain();
 //    createCommandPool();
