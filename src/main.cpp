@@ -349,6 +349,8 @@ public:
         if (!((present == VK_SUCCESS) || (present == VK_SUBOPTIMAL_KHR))) {
             VK_CHECK_RESULT(present);
         }
+
+        CopyImageData();
 #endif
     }
 
@@ -1076,6 +1078,173 @@ public:
     {
         // This function is called by the base example class each time the view is changed by user input
         updateUniformBuffers();
+    }
+
+    /*
+    Submit command buffer to a queue and wait for fence until queue operations have been finished
+*/
+    void submitWork(VkCommandBuffer cmdBuffer, VkQueue queue)
+    {
+        VkSubmitInfo submitInfo = vks::initializers::submitInfo();
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmdBuffer;
+        VkFenceCreateInfo fenceInfo = vks::initializers::fenceCreateInfo();
+        VkFence fence;
+        VK_CHECK_RESULT(vkCreateFence(device, &fenceInfo, nullptr, &fence));
+        VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
+        VK_CHECK_RESULT(vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX));
+        vkDestroyFence(device, fence, nullptr);
+    }
+
+    /*
+        Copy framebuffer image to host visible image
+    */
+    const char* imagedata;
+    bool CopyDone=false;
+    void CopyImageData() {
+//        if (CopyDone) return;
+        CopyDone = true;
+        // Create the linear tiled destination image to copy to and to read the memory from
+        VkImageCreateInfo imgCreateInfo(vks::initializers::imageCreateInfo());
+        imgCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+        imgCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+        imgCreateInfo.extent.width = width;
+        imgCreateInfo.extent.height = height;
+        imgCreateInfo.extent.depth = 1;
+        imgCreateInfo.arrayLayers = 1;
+        imgCreateInfo.mipLevels = 1;
+        imgCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imgCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imgCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+        imgCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        // Create the image
+        VkImage dstImage;
+        VK_CHECK_RESULT(vkCreateImage(device, &imgCreateInfo, nullptr, &dstImage));
+
+        // Create memory to back up the image
+        VkMemoryRequirements memRequirements;
+        VkMemoryAllocateInfo memAllocInfo(vks::initializers::memoryAllocateInfo());
+        VkDeviceMemory dstImageMemory;
+        vkGetImageMemoryRequirements(device, dstImage, &memRequirements);
+        memAllocInfo.allocationSize = memRequirements.size;
+        // Memory must be host visible to copy from
+        memAllocInfo.memoryTypeIndex = getMemoryTypeIndex(memRequirements.memoryTypeBits,
+                                                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        VK_CHECK_RESULT(vkAllocateMemory(device, &memAllocInfo, nullptr, &dstImageMemory));
+        VK_CHECK_RESULT(vkBindImageMemory(device, dstImage, dstImageMemory, 0));
+
+        // Do the actual blit from the offscreen image to our host visible destination image
+
+        VkCommandBufferAllocateInfo cmdBufAllocateInfo = vks::initializers::commandBufferAllocateInfo(cmdPool,
+                                                                                                      VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+                                                                                                      1);
+        VkCommandBuffer copyCmd;
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &copyCmd));
+        VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+        VK_CHECK_RESULT(vkBeginCommandBuffer(copyCmd, &cmdBufInfo));
+
+        // Transition destination image to transfer destination layout
+        vks::tools::insertImageMemoryBarrier(
+                copyCmd,
+                dstImage,
+                0,
+                VK_ACCESS_TRANSFER_WRITE_BIT,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+
+        // colorAttachment.image is already in VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, and does not need to be transitioned
+
+        VkImageCopy imageCopyRegion{};
+        imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageCopyRegion.srcSubresource.layerCount = 1;
+        imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageCopyRegion.dstSubresource.layerCount = 1;
+        imageCopyRegion.extent.width = width;
+        imageCopyRegion.extent.height = height;
+        imageCopyRegion.extent.depth = 1;
+
+        vkCmdCopyImage(
+                copyCmd,
+                swapChain.buffers[currentBuffer].image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                1,
+                &imageCopyRegion);
+
+        // Transition destination image to general layout, which is the required layout for mapping the image memory later on
+        vks::tools::insertImageMemoryBarrier(
+                copyCmd,
+                dstImage,
+                VK_ACCESS_TRANSFER_WRITE_BIT,
+                VK_ACCESS_MEMORY_READ_BIT,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                VK_IMAGE_LAYOUT_GENERAL,
+                VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VK_PIPELINE_STAGE_TRANSFER_BIT,
+                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+
+        VK_CHECK_RESULT(vkEndCommandBuffer(copyCmd));
+        submitWork(copyCmd, queue);
+        // Get layout of the image (including row pitch)
+        VkImageSubresource subResource{};
+        subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        VkSubresourceLayout subResourceLayout;
+
+        vkGetImageSubresourceLayout(device, dstImage, &subResource, &subResourceLayout);
+
+        // Map image memory so we can start copying from it
+        vkMapMemory(device, dstImageMemory, 0, VK_WHOLE_SIZE, 0, (void **) &imagedata);
+        imagedata += subResourceLayout.offset;
+
+        /*
+			Save host visible framebuffer image to disk (ppm format)
+		*/
+
+#if defined (VK_USE_PLATFORM_ANDROID_KHR)
+        const char* filename = strcat(getenv("EXTERNAL_STORAGE"), "/headless.ppm");
+#else
+        const char *filename = "headless.ppm";
+#endif
+        std::ofstream file(filename, std::ios::out | std::ios::binary);
+
+        // ppm header
+        file << "P6\n" << width << "\n" << height << "\n" << 255 << "\n";
+
+        // If source is BGR (destination is always RGB) and we can't use blit (which does automatic conversion), we'll have to manually swizzle color components
+        // Check if source is BGR and needs swizzle
+        std::vector<VkFormat> formatsBGR = {VK_FORMAT_B8G8R8A8_SRGB, VK_FORMAT_B8G8R8A8_UNORM,
+                                            VK_FORMAT_B8G8R8A8_SNORM};
+        const bool colorSwizzle = (std::find(formatsBGR.begin(), formatsBGR.end(), VK_FORMAT_R8G8B8A8_UNORM) !=
+                                   formatsBGR.end());
+
+        // ppm binary pixel data
+        for (int32_t y = 0; y < height; y++) {
+            unsigned int *row = (unsigned int *) imagedata;
+            for (int32_t x = 0; x < width; x++) {
+                if (colorSwizzle) {
+                    file.write((char *) row + 2, 1);
+                    file.write((char *) row + 1, 1);
+                    file.write((char *) row, 1);
+                } else {
+                    file.write((char *) row, 3);
+                }
+                row++;
+            }
+            imagedata += subResourceLayout.rowPitch;
+        }
+        file.close();
+
+        printf("Framebuffer image saved to %s\n", filename);
+
+        // Clean up resources
+        vkUnmapMemory(device, dstImageMemory);
+        vkFreeMemory(device, dstImageMemory, nullptr);
+        vkDestroyImage(device, dstImage, nullptr);
+
+        vkQueueWaitIdle(queue);
     }
 };
 
