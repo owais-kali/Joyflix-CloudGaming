@@ -396,18 +396,102 @@ void VulkanBase::initSwapchain()
     swapChain.initSurface(connection, window);
 }
 
+void VulkanBase::createCommandPool()
+{
+    VkCommandPoolCreateInfo cmdPoolInfo = {};
+    cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    cmdPoolInfo.queueFamilyIndex = swapChain.queueNodeIndex;
+    cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
+}
+
+void VulkanBase::setupSwapChain()
+{
+    swapChain.create(&width, &height, settings.vsync, settings.fullscreen);
+}
+
+void VulkanBase::createCommandBuffers()
+{
+    // Create one command buffer for each swap chain image and reuse for rendering
+    drawCmdBuffers.resize(swapChain.imageCount);
+
+    VkCommandBufferAllocateInfo cmdBufAllocateInfo =
+            vks::initializers::commandBufferAllocateInfo(
+                    cmdPool,
+                    VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+                    static_cast<uint32_t>(drawCmdBuffers.size()));
+
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
+}
+
+void VulkanBase::createSynchronizationPrimitives()
+{
+    // Wait fences to sync command buffer access
+    VkFenceCreateInfo fenceCreateInfo = vks::initializers::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
+    waitFences.resize(drawCmdBuffers.size());
+    for (auto& fence : waitFences) {
+        VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
+    }
+}
+
+/** @brief (Virtual) Setup default depth and stencil views */
+void VulkanBase::setupDepthStencil(){
+    VkImageCreateInfo imageCI{};
+    imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageCI.imageType = VK_IMAGE_TYPE_2D;
+    imageCI.format = depthFormat;
+    imageCI.extent = { width, height, 1 };
+    imageCI.mipLevels = 1;
+    imageCI.arrayLayers = 1;
+    imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageCI.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    VK_CHECK_RESULT(vkCreateImage(device, &imageCI, nullptr, &depthStencil.image));
+    VkMemoryRequirements memReqs{};
+    vkGetImageMemoryRequirements(device, depthStencil.image, &memReqs);
+
+    VkMemoryAllocateInfo memAllloc{};
+    memAllloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    memAllloc.allocationSize = memReqs.size;
+    memAllloc.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    VK_CHECK_RESULT(vkAllocateMemory(device, &memAllloc, nullptr, &depthStencil.mem));
+    VK_CHECK_RESULT(vkBindImageMemory(device, depthStencil.image, depthStencil.mem, 0));
+
+    VkImageViewCreateInfo imageViewCI{};
+    imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    imageViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    imageViewCI.image = depthStencil.image;
+    imageViewCI.format = depthFormat;
+    imageViewCI.subresourceRange.baseMipLevel = 0;
+    imageViewCI.subresourceRange.levelCount = 1;
+    imageViewCI.subresourceRange.baseArrayLayer = 0;
+    imageViewCI.subresourceRange.layerCount = 1;
+    imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    // Stencil aspect should only be set on depth + stencil formats (VK_FORMAT_D16_UNORM_S8_UINT..VK_FORMAT_D32_SFLOAT_S8_UINT
+    if (depthFormat >= VK_FORMAT_D16_UNORM_S8_UINT) {
+        imageViewCI.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+    VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCI, nullptr, &depthStencil.view));
+};
+
+/** @brief (Virtual) Setup a default renderpass */
+void VulkanBase::setupRenderPass(){
+
+};
+
 void VulkanBase::prepare()
 {
     if (vulkanDevice->enableDebugMarkers) {
 //        vks::debugmarker::setup(device);
     }
     initSwapchain();
-//    createCommandPool();
-//    setupSwapChain();
-//    createCommandBuffers();
-//    createSynchronizationPrimitives();
-//    setupDepthStencil();
-//    setupRenderPass();
+    createCommandPool();
+    setupSwapChain();
+    createCommandBuffers();
+    createSynchronizationPrimitives();
+    setupDepthStencil();
+    setupRenderPass();
 //    createPipelineCache();
 //    setupFrameBuffer();
 //    settings.overlay = settings.overlay && (!benchmark.active);
@@ -434,12 +518,8 @@ void VulkanBase::mouseMoved(double x, double y, bool &handled){};
 void VulkanBase::windowResized(){};
 /** @brief (Virtual) Called when resources have been recreated that require a rebuild of the command buffers (e.g. frame buffer), to be implemented by the sample application */
 void VulkanBase::buildCommandBuffers(){};
-/** @brief (Virtual) Setup default depth and stencil views */
-void VulkanBase::setupDepthStencil(){};
 /** @brief (Virtual) Setup default framebuffers for all requested swapchain images */
 void VulkanBase::setupFrameBuffer(){};
-/** @brief (Virtual) Setup a default renderpass */
-void VulkanBase::setupRenderPass(){};
 /** @brief (Virtual) Called after the physical device features have been read, can be used to set features to enable on the device */
 void VulkanBase::getEnabledFeatures(){};
 /** @brief (Virtual) Called after the physical device extensions have been read, can be used to enable extensions based on the supported extension listing*/

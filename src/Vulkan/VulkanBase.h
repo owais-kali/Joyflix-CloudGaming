@@ -46,7 +46,17 @@ private:
     std::string name = "vulkanExample";
     uint32_t apiVersion = VK_API_VERSION_1_0;
 
+    struct {
+        VkImage image;
+        VkDeviceMemory mem;
+        VkImageView view;
+    } depthStencil;
+
     void initSwapchain();
+    void createCommandPool();
+    void setupSwapChain();
+    void createCommandBuffers();
+    void createSynchronizationPrimitives();
 
 public:
     bool prepared = false;
