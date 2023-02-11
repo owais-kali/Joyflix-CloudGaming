@@ -36,6 +36,9 @@
 #include "VulkanSwapChain.h"
 #include "VulkanDebug.h"
 #include "benchmark.hpp"
+#include "camera.hpp"
+
+#include "keycodes.hpp"
 
 class VulkanBase {
 private:
@@ -54,6 +57,21 @@ private:
         VkImageView view;
     } depthStencil;
 
+    struct {
+        glm::vec2 axisLeft = glm::vec2(0.0f);
+        glm::vec2 axisRight = glm::vec2(0.0f);
+    } gamePadState;
+
+    struct {
+        bool left = false;
+        bool right = false;
+        bool middle = false;
+    } mouseButtons;
+
+    void windowResize();
+    void handleMouseMove(int32_t x, int32_t y);
+    void nextFrame();
+    void updateOverlay();
     void createPipelineCache();
     void initSwapchain();
     void createCommandPool();
@@ -98,6 +116,9 @@ public:
     // Multiplier for speeding up (or slowing down) the global timer
     float timerSpeed = 0.25f;
     bool paused = false;
+
+    Camera camera;
+    glm::vec2 mousePos;
 
 protected:
     // Returns the path to the root of the glsl or hlsl shader directory.
@@ -177,6 +198,7 @@ public:
     bool initVulkan();
     xcb_window_t setupWindow();
     void initxcbConnection();
+    void handleEvent(const xcb_generic_event_t *event);
 
     /** @brief (Virtual) Creates the application wide Vulkan instance */
     virtual VkResult createInstance(bool enableValidation);
@@ -205,4 +227,7 @@ public:
 
     /** @brief Prepares all Vulkan resources and functions required to run the sample */
     virtual void prepare();
+
+    /** @brief Entry point for the main render loop */
+    void renderLoop();
 };

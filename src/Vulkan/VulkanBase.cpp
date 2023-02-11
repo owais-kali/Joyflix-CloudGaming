@@ -597,7 +597,522 @@ void VulkanBase::prepare()
     settings.overlay = settings.overlay && (!benchmark.active);
 }
 
-void VulkanBase::render(){};
+void VulkanBase::updateOverlay(){
+
+}
+
+void VulkanBase::handleMouseMove(int32_t x, int32_t y)
+{
+    int32_t dx = (int32_t)mousePos.x - x;
+    int32_t dy = (int32_t)mousePos.y - y;
+
+    bool handled = false;
+
+    mouseMoved((float)x, (float)y, handled);
+
+    if (handled) {
+        mousePos = glm::vec2((float)x, (float)y);
+        return;
+    }
+
+    if (mouseButtons.left) {
+        camera.rotate(glm::vec3(dy * camera.rotationSpeed, -dx * camera.rotationSpeed, 0.0f));
+        viewUpdated = true;
+    }
+    if (mouseButtons.right) {
+        camera.translate(glm::vec3(-0.0f, 0.0f, dy * .005f));
+        viewUpdated = true;
+    }
+    if (mouseButtons.middle) {
+        camera.translate(glm::vec3(-dx * 0.005f, -dy * 0.005f, 0.0f));
+        viewUpdated = true;
+    }
+    mousePos = glm::vec2((float)x, (float)y);
+}
+
+void VulkanBase::handleEvent(const xcb_generic_event_t *event)
+{
+    switch (event->response_type & 0x7f)
+    {
+        case XCB_CLIENT_MESSAGE:
+            if ((*(xcb_client_message_event_t*)event).data.data32[0] ==
+                (*atom_wm_delete_window).atom) {
+                quit = true;
+            }
+            break;
+        case XCB_MOTION_NOTIFY:
+        {
+            xcb_motion_notify_event_t *motion = (xcb_motion_notify_event_t *)event;
+            handleMouseMove((int32_t)motion->event_x, (int32_t)motion->event_y);
+            break;
+        }
+            break;
+        case XCB_BUTTON_PRESS:
+        {
+            xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
+            if (press->detail == XCB_BUTTON_INDEX_1)
+                mouseButtons.left = true;
+            if (press->detail == XCB_BUTTON_INDEX_2)
+                mouseButtons.middle = true;
+            if (press->detail == XCB_BUTTON_INDEX_3)
+                mouseButtons.right = true;
+        }
+            break;
+        case XCB_BUTTON_RELEASE:
+        {
+            xcb_button_press_event_t *press = (xcb_button_press_event_t *)event;
+            if (press->detail == XCB_BUTTON_INDEX_1)
+                mouseButtons.left = false;
+            if (press->detail == XCB_BUTTON_INDEX_2)
+                mouseButtons.middle = false;
+            if (press->detail == XCB_BUTTON_INDEX_3)
+                mouseButtons.right = false;
+        }
+            break;
+        case XCB_KEY_PRESS:
+        {
+            const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
+            switch (keyEvent->detail)
+            {
+                case KEY_W:
+                    camera.keys.up = true;
+                    break;
+                case KEY_S:
+                    camera.keys.down = true;
+                    break;
+                case KEY_A:
+                    camera.keys.left = true;
+                    break;
+                case KEY_D:
+                    camera.keys.right = true;
+                    break;
+                case KEY_P:
+                    paused = !paused;
+                    break;
+                case KEY_F1:
+                    break;
+            }
+        }
+            break;
+        case XCB_KEY_RELEASE:
+        {
+            const xcb_key_release_event_t *keyEvent = (const xcb_key_release_event_t *)event;
+            switch (keyEvent->detail)
+            {
+                case KEY_W:
+                    camera.keys.up = false;
+                    break;
+                case KEY_S:
+                    camera.keys.down = false;
+                    break;
+                case KEY_A:
+                    camera.keys.left = false;
+                    break;
+                case KEY_D:
+                    camera.keys.right = false;
+                    break;
+                case KEY_ESCAPE:
+                    quit = true;
+                    break;
+            }
+            keyPressed(keyEvent->detail);
+        }
+            break;
+        case XCB_DESTROY_NOTIFY:
+            quit = true;
+            break;
+        case XCB_CONFIGURE_NOTIFY:
+        {
+            const xcb_configure_notify_event_t *cfgEvent = (const xcb_configure_notify_event_t *)event;
+            if ((prepared) && ((cfgEvent->width != width) || (cfgEvent->height != height)))
+            {
+                destWidth = cfgEvent->width;
+                destHeight = cfgEvent->height;
+                if ((destWidth > 0) && (destHeight > 0))
+                {
+                    windowResize();
+                }
+            }
+        }
+            break;
+        default:
+            break;
+    }
+}
+void VulkanBase::windowResize() {
+
+}
+
+void VulkanBase::renderLoop()
+{
+    // SRS - for non-apple plaforms, handle benchmarking here within VulkanExampleBase::renderLoop()
+//     - for macOS, handle benchmarking within NSApp rendering loop via displayLinkOutputCb()
+#if !(defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
+    if (benchmark.active) {
+        benchmark.run([=] { render(); }, vulkanDevice->properties);
+        vkDeviceWaitIdle(device);
+        if (benchmark.filename != "") {
+            benchmark.saveResults();
+        }
+        return;
+    }
+#endif
+
+    destWidth = width;
+    destHeight = height;
+    lastTimestamp = std::chrono::high_resolution_clock::now();
+    tPrevEnd = lastTimestamp;
+#if defined(_WIN32)
+    MSG msg;
+	bool quitMessageReceived = false;
+	while (!quitMessageReceived) {
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+			if (msg.message == WM_QUIT) {
+				quitMessageReceived = true;
+				break;
+			}
+		}
+		if (prepared && !IsIconic(window)) {
+			nextFrame();
+		}
+	}
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+    while (1)
+	{
+		int ident;
+		int events;
+		struct android_poll_source* source;
+		bool destroy = false;
+
+		focused = true;
+
+		while ((ident = ALooper_pollAll(focused ? 0 : -1, NULL, &events, (void**)&source)) >= 0)
+		{
+			if (source != NULL)
+			{
+				source->process(androidApp, source);
+			}
+			if (androidApp->destroyRequested != 0)
+			{
+				LOGD("Android app destroy requested");
+				destroy = true;
+				break;
+			}
+		}
+
+		// App destruction requested
+		// Exit loop, example will be destroyed in application main
+		if (destroy)
+		{
+			ANativeActivity_finish(androidApp->activity);
+			break;
+		}
+
+		// Render frame
+		if (prepared)
+		{
+			auto tStart = std::chrono::high_resolution_clock::now();
+			render();
+			frameCounter++;
+			auto tEnd = std::chrono::high_resolution_clock::now();
+			auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+			frameTimer = tDiff / 1000.0f;
+			camera.update(frameTimer);
+			// Convert to clamped timer value
+			if (!paused)
+			{
+				timer += timerSpeed * frameTimer;
+				if (timer > 1.0)
+				{
+					timer -= 1.0f;
+				}
+			}
+			float fpsTimer = std::chrono::duration<double, std::milli>(tEnd - lastTimestamp).count();
+			if (fpsTimer > 1000.0f)
+			{
+				lastFPS = (float)frameCounter * (1000.0f / fpsTimer);
+				frameCounter = 0;
+				lastTimestamp = tEnd;
+			}
+
+			// TODO: Cap UI overlay update rates/only issue when update requested
+			updateOverlay();
+
+			bool updateView = false;
+
+			// Check touch state (for movement)
+			if (touchDown) {
+				touchTimer += frameTimer;
+			}
+			if (touchTimer >= 1.0) {
+				camera.keys.up = true;
+				viewChanged();
+			}
+
+			// Check gamepad state
+			const float deadZone = 0.0015f;
+			// todo : check if gamepad is present
+			// todo : time based and relative axis positions
+			if (camera.type != Camera::CameraType::firstperson)
+			{
+				// Rotate
+				if (std::abs(gamePadState.axisLeft.x) > deadZone)
+				{
+					camera.rotate(glm::vec3(0.0f, gamePadState.axisLeft.x * 0.5f, 0.0f));
+					updateView = true;
+				}
+				if (std::abs(gamePadState.axisLeft.y) > deadZone)
+				{
+					camera.rotate(glm::vec3(gamePadState.axisLeft.y * 0.5f, 0.0f, 0.0f));
+					updateView = true;
+				}
+				// Zoom
+				if (std::abs(gamePadState.axisRight.y) > deadZone)
+				{
+					camera.translate(glm::vec3(0.0f, 0.0f, gamePadState.axisRight.y * 0.01f));
+					updateView = true;
+				}
+				if (updateView)
+				{
+					viewChanged();
+				}
+			}
+			else
+			{
+				updateView = camera.updatePad(gamePadState.axisLeft, gamePadState.axisRight, frameTimer);
+				if (updateView)
+				{
+					viewChanged();
+				}
+			}
+		}
+	}
+#elif defined(_DIRECT2DISPLAY)
+    while (!quit)
+	{
+		auto tStart = std::chrono::high_resolution_clock::now();
+		if (viewUpdated)
+		{
+			viewUpdated = false;
+			viewChanged();
+		}
+		render();
+		frameCounter++;
+		auto tEnd = std::chrono::high_resolution_clock::now();
+		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+		frameTimer = tDiff / 1000.0f;
+		camera.update(frameTimer);
+		if (camera.moving())
+		{
+			viewUpdated = true;
+		}
+		// Convert to clamped timer value
+		if (!paused)
+		{
+			timer += timerSpeed * frameTimer;
+			if (timer > 1.0)
+			{
+				timer -= 1.0f;
+			}
+		}
+		float fpsTimer = std::chrono::duration<double, std::milli>(tEnd - lastTimestamp).count();
+		if (fpsTimer > 1000.0f)
+		{
+			lastFPS = (float)frameCounter * (1000.0f / fpsTimer);
+			frameCounter = 0;
+			lastTimestamp = tEnd;
+		}
+		updateOverlay();
+	}
+#elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
+    while (!quit)
+	{
+		auto tStart = std::chrono::high_resolution_clock::now();
+		if (viewUpdated)
+		{
+			viewUpdated = false;
+			viewChanged();
+		}
+		DFBWindowEvent event;
+		while (!event_buffer->GetEvent(event_buffer, DFB_EVENT(&event)))
+		{
+			handleEvent(&event);
+		}
+		render();
+		frameCounter++;
+		auto tEnd = std::chrono::high_resolution_clock::now();
+		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+		frameTimer = tDiff / 1000.0f;
+		camera.update(frameTimer);
+		if (camera.moving())
+		{
+			viewUpdated = true;
+		}
+		// Convert to clamped timer value
+		if (!paused)
+		{
+			timer += timerSpeed * frameTimer;
+			if (timer > 1.0)
+			{
+				timer -= 1.0f;
+			}
+		}
+		float fpsTimer = std::chrono::duration<double, std::milli>(tEnd - lastTimestamp).count();
+		if (fpsTimer > 1000.0f)
+		{
+			lastFPS = (float)frameCounter * (1000.0f / fpsTimer);
+			frameCounter = 0;
+			lastTimestamp = tEnd;
+		}
+		updateOverlay();
+	}
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+    while (!quit)
+	{
+		auto tStart = std::chrono::high_resolution_clock::now();
+		if (viewUpdated)
+		{
+			viewUpdated = false;
+			viewChanged();
+		}
+
+		while (!configured)
+			wl_display_dispatch(display);
+		while (wl_display_prepare_read(display) != 0)
+			wl_display_dispatch_pending(display);
+		wl_display_flush(display);
+		wl_display_read_events(display);
+		wl_display_dispatch_pending(display);
+
+		render();
+		frameCounter++;
+		auto tEnd = std::chrono::high_resolution_clock::now();
+		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+		frameTimer = tDiff / 1000.0f;
+		camera.update(frameTimer);
+		if (camera.moving())
+		{
+			viewUpdated = true;
+		}
+		// Convert to clamped timer value
+		if (!paused)
+		{
+			timer += timerSpeed * frameTimer;
+			if (timer > 1.0)
+			{
+				timer -= 1.0f;
+			}
+		}
+		float fpsTimer = std::chrono::duration<double, std::milli>(tEnd - lastTimestamp).count();
+		if (fpsTimer > 1000.0f)
+		{
+			if (!settings.overlay)
+			{
+				std::string windowTitle = getWindowTitle();
+				xdg_toplevel_set_title(xdg_toplevel, windowTitle.c_str());
+			}
+			lastFPS = (float)frameCounter * (1000.0f / fpsTimer);
+			frameCounter = 0;
+			lastTimestamp = tEnd;
+		}
+		updateOverlay();
+	}
+#elif defined(VK_USE_PLATFORM_XCB_KHR)
+    xcb_flush(connection);
+    while (!quit)
+    {
+        auto tStart = std::chrono::high_resolution_clock::now();
+        if (viewUpdated)
+        {
+            viewUpdated = false;
+            viewChanged();
+        }
+        xcb_generic_event_t *event;
+        while ((event = xcb_poll_for_event(connection)))
+        {
+            handleEvent(event);
+            free(event);
+        }
+        render();
+        frameCounter++;
+        auto tEnd = std::chrono::high_resolution_clock::now();
+        auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+        frameTimer = tDiff / 1000.0f;
+        camera.update(frameTimer);
+        if (camera.moving())
+        {
+            viewUpdated = true;
+        }
+        // Convert to clamped timer value
+        if (!paused)
+        {
+            timer += timerSpeed * frameTimer;
+            if (timer > 1.0)
+            {
+                timer -= 1.0f;
+            }
+        }
+        float fpsTimer = std::chrono::duration<double, std::milli>(tEnd - lastTimestamp).count();
+        if (fpsTimer > 1000.0f)
+        {
+            if (!settings.overlay)
+            {
+                std::string windowTitle = getWindowTitle();
+                xcb_change_property(connection, XCB_PROP_MODE_REPLACE,
+                                    window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+                                    windowTitle.size(), windowTitle.c_str());
+            }
+            lastFPS = (float)frameCounter * (1000.0f / fpsTimer);
+            frameCounter = 0;
+            lastTimestamp = tEnd;
+        }
+        updateOverlay();
+    }
+#elif defined(VK_USE_PLATFORM_HEADLESS_EXT)
+    while (!quit)
+	{
+		auto tStart = std::chrono::high_resolution_clock::now();
+		if (viewUpdated)
+		{
+			viewUpdated = false;
+			viewChanged();
+		}
+		render();
+		frameCounter++;
+		auto tEnd = std::chrono::high_resolution_clock::now();
+		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
+		frameTimer = tDiff / 1000.0f;
+		camera.update(frameTimer);
+		if (camera.moving())
+		{
+			viewUpdated = true;
+		}
+		// Convert to clamped timer value
+		timer += timerSpeed * frameTimer;
+		if (timer > 1.0)
+		{
+			timer -= 1.0f;
+		}
+		float fpsTimer = std::chrono::duration<double, std::milli>(tEnd - lastTimestamp).count();
+		if (fpsTimer > 1000.0f)
+		{
+			lastFPS = (float)frameCounter * (1000.0f / fpsTimer);
+			frameCounter = 0;
+			lastTimestamp = tEnd;
+		}
+		updateOverlay();
+	}
+#elif (defined(VK_USE_PLATFORM_MACOS_MVK) && defined(VK_EXAMPLE_XCODE_GENERATED))
+	[NSApp run];
+#endif
+    // Flush device to make sure all resources can be freed
+    if (device != VK_NULL_HANDLE) {
+        vkDeviceWaitIdle(device);
+    }
+}
+
 /** @brief (Virtual) Called when the camera view has changed */
 void VulkanBase::viewChanged(){};
 /** @brief (Virtual) Called after a key was pressed, can be used to do custom key handling */

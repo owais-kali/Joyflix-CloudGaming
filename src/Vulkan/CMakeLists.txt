@@ -19,7 +19,9 @@ target_sources(VulkanBase
         VulkanSwapChain.h
         VulkanDebug.cpp
         VulkanDebug.h
-        benchmark.hpp)
+        benchmark.hpp
+        camera.hpp
+        keycodes.hpp)
 
 find_package(Vulkan REQUIRED)
 find_package(Threads REQUIRED)
