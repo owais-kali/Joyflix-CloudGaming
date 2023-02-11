@@ -34,6 +34,8 @@
 #include "VulkanTools.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
+#include "VulkanDebug.h"
+#include "benchmark.hpp"
 
 class VulkanBase {
 private:
@@ -52,6 +54,7 @@ private:
         VkImageView view;
     } depthStencil;
 
+    void createPipelineCache();
     void initSwapchain();
     void createCommandPool();
     void setupSwapChain();
@@ -69,6 +72,8 @@ public:
 
     /** @brief Last frame time measured using a high performance timer (if available) */
     float frameTimer = 1.0f;
+
+    vks::Benchmark benchmark;
 
     /** @brief Encapsulated physical and logical vulkan device */
     vks::VulkanDevice *vulkanDevice;

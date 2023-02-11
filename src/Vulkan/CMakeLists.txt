@@ -16,7 +16,10 @@ target_sources(VulkanBase
         VulkanBuffer.cpp
         VulkanBuffer.h
         VulkanSwapChain.cpp
-        VulkanSwapChain.h)
+        VulkanSwapChain.h
+        VulkanDebug.cpp
+        VulkanDebug.h
+        benchmark.hpp)
 
 find_package(Vulkan REQUIRED)
 find_package(Threads REQUIRED)
