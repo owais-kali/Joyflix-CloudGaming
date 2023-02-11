@@ -148,6 +148,7 @@ VulkanBase::VulkanBase(bool enableValidation) {
     commandLineParser.add("benchmarkresultfile", { "-bf", "--benchfilename" }, 1, "Set file name for benchmark results");
     commandLineParser.add("benchmarkresultframes", { "-bt", "--benchframetimes" }, 0, "Save frame times to benchmark results file");
     commandLineParser.add("benchmarkframes", { "-bfs", "--benchmarkframes" }, 1, "Only render the given number of frames");
+    commandLineParser.add("shaderspath", { "-sp", "--shaderspath" }, 1, "set glsl shaders dir path ");
 
     commandLineParser.parse(args);
 
@@ -198,7 +199,6 @@ bool VulkanBase::initVulkan()
     // Defaults to the first device unless specified by command line
     uint32_t selectedDevice = 0;
 
-#if !defined(VK_USE_PLATFORM_ANDROID_KHR)
     // GPU selection via command line argument
     if (commandLineParser.isSet("gpuselection")) {
         uint32_t index = commandLineParser.getValueAsInt("gpuselection", 0);
@@ -218,7 +218,10 @@ bool VulkanBase::initVulkan()
             std::cout << " API: " << (deviceProperties.apiVersion >> 22) << "." << ((deviceProperties.apiVersion >> 12) & 0x3ff) << "." << (deviceProperties.apiVersion & 0xfff) << "\n";
         }
     }
-#endif
+
+    if (commandLineParser.isSet("shaderspath")) {
+        shader_path = commandLineParser.getValueAsString("shaderspath", "");
+    }
 
     physicalDevice = physicalDevices[selectedDevice];
 
@@ -1126,5 +1129,4 @@ void VulkanBase::buildCommandBuffers(){};
 /** @brief (Virtual) Called after the physical device features have been read, can be used to set features to enable on the device */
 void VulkanBase::getEnabledFeatures(){};
 /** @brief (Virtual) Called after the physical device extensions have been read, can be used to enable extensions based on the supported extension listing*/
-void VulkanBase::getEnabledExtensions(){};
-
+void VulkanBase::getEnabledExtensions(){}

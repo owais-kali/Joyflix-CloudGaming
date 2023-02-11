@@ -95,7 +95,6 @@ public:
 
 	std::string getValueAsString(std::string name, std::string defaultValue)
 	{
-		assert(options.find(name) != options.end());
 		std::string value = options[name].value;
 		return (value != "") ? value : defaultValue;
 	}
