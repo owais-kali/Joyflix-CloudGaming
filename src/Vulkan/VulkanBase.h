@@ -47,27 +47,6 @@ private:
     uint32_t destHeight;
     bool resizing = false;
 
-    std::string title = "Vulkan Example";
-    std::string name = "vulkanExample";
-    uint32_t apiVersion = VK_API_VERSION_1_0;
-
-    struct {
-        VkImage image;
-        VkDeviceMemory mem;
-        VkImageView view;
-    } depthStencil;
-
-    struct {
-        glm::vec2 axisLeft = glm::vec2(0.0f);
-        glm::vec2 axisRight = glm::vec2(0.0f);
-    } gamePadState;
-
-    struct {
-        bool left = false;
-        bool right = false;
-        bool middle = false;
-    } mouseButtons;
-
     void windowResize();
     void handleMouseMove(int32_t x, int32_t y);
     void nextFrame();
@@ -78,6 +57,8 @@ private:
     void setupSwapChain();
     void createCommandBuffers();
     void createSynchronizationPrimitives();
+
+    std::string shaderDir = "glsl";
 
 public:
     bool prepared = false;
@@ -120,9 +101,27 @@ public:
     Camera camera;
     glm::vec2 mousePos;
 
+    std::string title = "Vulkan Example";
+    std::string name = "vulkanExample";
+    uint32_t apiVersion = VK_API_VERSION_1_0;
+
+    struct {
+        VkImage image;
+        VkDeviceMemory mem;
+        VkImageView view;
+    } depthStencil;
+
+    struct {
+        glm::vec2 axisLeft = glm::vec2(0.0f);
+        glm::vec2 axisRight = glm::vec2(0.0f);
+    } gamePadState;
+
+    struct {
+        bool left = false;
+        bool right = false;
+        bool middle = false;
+    } mouseButtons;
 protected:
-    // Returns the path to the root of the glsl or hlsl shader directory.
-    std::string getShadersPath() const;
 
     // Frame counter to display fps
     uint32_t frameCounter = 0;
@@ -230,4 +229,9 @@ public:
 
     /** @brief Entry point for the main render loop */
     void renderLoop();
+private:
+    std::string shader_path;
+public:
+    void setShaderPath(std::string &path){shader_path = path;};
+    std::string getShadersPath(){return shader_path;};
 };
