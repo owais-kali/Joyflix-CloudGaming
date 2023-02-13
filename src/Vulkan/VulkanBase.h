@@ -194,7 +194,7 @@ public:
     VulkanBase(bool enableValidation);
     virtual ~VulkanBase();
     /** @brief Setup the vulkan instance, enable required extensions and connect to the physical device (GPU) */
-    bool initVulkan();
+    bool initVulkan(void* cuda_deviceUUID);
     xcb_window_t setupWindow();
     void initxcbConnection();
     void handleEvent(const xcb_generic_event_t *event);
@@ -234,4 +234,13 @@ private:
 public:
     void setShaderPath(std::string &path){shader_path = path;};
     std::string getShadersPath(){return shader_path;};
+
+    VkInstance GetInstance(){return instance;};
+    VkPhysicalDevice GetPhysicalDevice(){return physicalDevice;};
+
+    // callback function, see InterceptInitialization
+    typedef PFN_vkGetInstanceProcAddr(* VulkanInitCallback)(PFN_vkGetInstanceProcAddr getInstanceProcAddr, void* userdata);
+    VulkanInitCallback vulkanInitCallback;
+
+    bool GetPhysicalDeviceUUIDInto(VkPhysicalDevice phyDevice, std::array<uint8_t, VK_UUID_SIZE>* deviceUUID);
 };

@@ -55,14 +55,7 @@ VkResult VulkanBase::createInstance(bool enableValidation)
         }
     }
 
-#if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
-    // SRS - When running on iOS/macOS with MoltenVK, enable VK_KHR_get_physical_device_properties2 if not already enabled by the example (required by VK_KHR_portability_subset)
-	if (std::find(enabledInstanceExtensions.begin(), enabledInstanceExtensions.end(), VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == enabledInstanceExtensions.end())
-	{
-		enabledInstanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-	}
-#endif
-
+    enabledInstanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     // Enabled requested instance extensions
     if (enabledInstanceExtensions.size() > 0)
     {
@@ -126,6 +119,10 @@ VkResult VulkanBase::createInstance(bool enableValidation)
             std::cerr << "Validation layer VK_LAYER_KHRONOS_validation not present, validation is disabled\n";
         }
     }
+
+    if(vulkanInitCallback)
+        vulkanInitCallback(vkGetInstanceProcAddr, nullptr);
+
     return vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
 }
 
@@ -156,7 +153,43 @@ VulkanBase::VulkanBase(bool enableValidation) {
 }
 VulkanBase::~VulkanBase(){}
 
-bool VulkanBase::initVulkan()
+namespace bytes {
+    inline std::ostream &operator<<(std::ostream &os, const char c) {
+        return os << (std::is_signed<char>::value
+                      ? static_cast<int>(c)
+                      : static_cast<unsigned int>(c));
+    }
+
+    inline std::ostream &operator<<(std::ostream &os, const signed char c) {
+        return os << static_cast<int>(c);
+    }
+
+    inline std::ostream &operator<<(std::ostream &os, const unsigned char c) {
+        return os << static_cast<unsigned int>(c);
+    }
+}
+
+bool VulkanBase::GetPhysicalDeviceUUIDInto(VkPhysicalDevice phyDevice, std::array<uint8_t, VK_UUID_SIZE>* deviceUUID){
+    VkPhysicalDeviceIDPropertiesKHR deviceIDProps = {};
+    deviceIDProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES_KHR;
+
+    VkPhysicalDeviceProperties2KHR props = {};
+    props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+    props.pNext = &deviceIDProps;
+
+    vkGetPhysicalDeviceProperties2(phyDevice, &props);
+    std::memcpy(deviceUUID->data(), deviceIDProps.deviceUUID, VK_UUID_SIZE);
+
+    printf("deviceUUID: size:%ld\n", deviceUUID->size());
+    for (int i = 0; i < VK_UUID_SIZE; ++i) {
+        using namespace bytes;
+        printf("%d", (*deviceUUID)[i]);
+    }
+    printf("\n");
+    return true;
+}
+
+bool VulkanBase::initVulkan(void* cuda_deviceUUID)
 {
     VkResult err;
 
@@ -199,15 +232,6 @@ bool VulkanBase::initVulkan()
     // Defaults to the first device unless specified by command line
     uint32_t selectedDevice = 0;
 
-    // GPU selection via command line argument
-    if (commandLineParser.isSet("gpuselection")) {
-        uint32_t index = commandLineParser.getValueAsInt("gpuselection", 0);
-        if (index > gpuCount - 1) {
-            std::cerr << "Selected device index " << index << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)" << "\n";
-        } else {
-            selectedDevice = index;
-        }
-    }
     if (commandLineParser.isSet("gpulist")) {
         std::cout << "Available Vulkan devices" << "\n";
         for (uint32_t i = 0; i < gpuCount; i++) {
@@ -223,7 +247,25 @@ bool VulkanBase::initVulkan()
         shader_path = commandLineParser.getValueAsString("shaderspath", "");
     }
 
-    physicalDevice = physicalDevices[selectedDevice];
+    // Loop over the available devices and identify the CUdevice  corresponding to the physical device in use by
+    // this Vulkan instance. This is required because there is no other way to match GPUs across API boundaries.
+    bool foundDevice = false;
+    for (int i = 0; i < physicalDevices.size(); i++)
+    {
+        std::array<uint8_t, VK_UUID_SIZE> deviceUUID;
+        GetPhysicalDeviceUUIDInto(physicalDevices[i], &deviceUUID);
+        if (!std::memcmp(
+                cuda_deviceUUID, static_cast<const void*>(deviceUUID.data()), sizeof(VK_UUID_SIZE)))
+        {
+            foundDevice = true;
+            physicalDevice = physicalDevices[i];
+            break;
+        }
+    }
+
+    if(!foundDevice){
+        throw std::runtime_error("No CUDA capable devices found!\n");
+    }
 
     // Store properties (including limits), features and memory properties of the physical device (so that examples can check against them)
     vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);

@@ -2,6 +2,8 @@
 
 Open-source Cloud Gaming Service
 
+![Design](https://github.com/joyflix99/Joyflix-CloudGaming/blob/cuda_app/Joyflix%20Engine.drawio.png)
+
 ## Introduction
 Joyflix provides a cloud gaming platform to run Windows OS games on linux using [Wine](https://www.winehq.org/).
 
@@ -19,7 +21,7 @@ fully compatible with multi-platform like Desktop, Android, IOS.
 
 ## Encoding
 - For Encoding we use Nvidia's NVENC API for hardware encoding. 
-- So the server mush have an nvidia gpu with nvenc support. See [nvenc support matrix](https://developer.nvidia.com/nvidia-video-codec-sdk)
+- So the server must have an nvidia gpu with nvenc support. See [nvenc support matrix](https://developer.nvidia.com/nvidia-video-codec-sdk)
 
 ## Webrtc 
 - We use googles Webrtc implementation see [here](https://webrtc.googlesource.com/src/)
@@ -28,7 +30,7 @@ fully compatible with multi-platform like Desktop, Android, IOS.
 - Again since there is no X server we have to customize linux wine's source code to handle user input. 
 
 ## Client
-- Since it is built on Webrtc Joyflix can be run on any device that supports Chrome browser. 
+- Since it is built on Webrtc, Joyflix can be run on any device that supports Chrome browser. 
 
 ## Game Saves
 - Game Saves are backed up on Joyflix server so need to run steam or epic games to back up saves

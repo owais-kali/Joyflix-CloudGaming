@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "Vulkan/VulkanBase.h"
+#include "Cuda/CudaContext.h"
 
 #include <chrono>
 #include <thread>
@@ -1102,7 +1103,7 @@ public:
     const char* imagedata;
     bool CopyDone=false;
     void CopyImageData() {
-//        if (CopyDone) return;
+        if (CopyDone) return;
         CopyDone = true;
         // Create the linear tiled destination image to copy to and to read the memory from
         VkImageCreateInfo imgCreateInfo(vks::initializers::imageCreateInfo());
@@ -1249,9 +1250,15 @@ public:
 };
 
 VulkanApp* vulkanApp;
+CudaContext* cuda_ctx;
+void StartCudaApp(){
+    cuda_ctx = new CudaContext();
+    cuda_ctx->Init();
+}
 
 void StartVulkanApp(){
-    vulkanApp->initVulkan();
+    vulkanApp = new VulkanApp();
+    vulkanApp->initVulkan(static_cast<void*>(cuda_ctx->GetUUID().bytes));
     vulkanApp->setupWindow();
     vulkanApp->prepare();
     vulkanApp->renderLoop();
@@ -1260,7 +1267,8 @@ void StartVulkanApp(){
 int main(int argc, char * argv[])
 {
     for (size_t i = 0; i < argc; i++) { VulkanApp::args.push_back(argv[i]); };
-    vulkanApp = new VulkanApp();
+    StartCudaApp();
     StartVulkanApp();
     delete(vulkanApp);
+    delete cuda_ctx;
 }
