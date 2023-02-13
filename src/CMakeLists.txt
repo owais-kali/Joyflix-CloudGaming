@@ -8,4 +8,6 @@ target_sources(VCNW
         pch.h
         main.cpp)
 
-target_link_libraries(VCNW VulkanBase)
+target_link_libraries(VCNW
+        VulkanBase
+        CUDA_LIB)

@@ -12,12 +12,17 @@ public:
     CudaContext();
     ~CudaContext() = default;
 
-    CUresult Init(const VkInstance instance, VkPhysicalDevice physicalDevice);
+    CUresult Init();
     void Shutdown();
 
 private:
     CUcontext m_context;
-
+    CUuuid id = {};
     bool GetPhysicalDeviceUUIDInto(
             VkInstance instance, VkPhysicalDevice phyDevice, std::array<uint8_t, VK_UUID_SIZE>* deviceUUID);
+
+public:
+    CUuuid GetUUID(){
+        return id;
+    }
 };
