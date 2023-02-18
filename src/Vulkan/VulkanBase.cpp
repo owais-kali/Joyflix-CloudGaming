@@ -245,6 +245,8 @@ bool VulkanBase::initVulkan(void* cuda_deviceUUID)
 
     if (commandLineParser.isSet("shaderspath")) {
         shader_path = commandLineParser.getValueAsString("shaderspath", "");
+    }else{
+        throw std::runtime_error("--shaderspath is not set");
     }
 
     // Loop over the available devices and identify the CUdevice  corresponding to the physical device in use by
