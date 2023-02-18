@@ -1,7 +1,15 @@
 #pragma once
 
-class API {
-public:
-    void Print();
-    void StartServer();
-};
+namespace webrtc {
+    class API {
+    public:
+        API();
+
+        ~API();
+
+        void* ContextCreate();
+
+        void ContextDestroy(void* ctx);
+
+    };
+}

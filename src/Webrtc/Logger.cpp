@@ -22,7 +22,7 @@ namespace webrtc
         vsprintf(buf, fmt, vl);
 #endif
         va_end(vl);
-        printf("Logger: %s\n", buf);
+        printf("%s\n", buf);
 #endif
     }
     void checkf(bool result, const char* msg)

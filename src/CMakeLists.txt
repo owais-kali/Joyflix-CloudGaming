@@ -20,6 +20,8 @@ target_sources(VCNW
         PRIVATE
         pch.cpp
         pch.h
+        WebRTC_Handler.cpp
+        WebRTC_Handler.h
         main.cpp)
 
 target_link_libraries(VCNW

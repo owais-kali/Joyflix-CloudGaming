@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "Vulkan/VulkanBase.h"
 #include "Cuda/CudaContext.h"
+#include "WebRTC_Handler.h"
 #include "iostream"
 #include <chrono>
 #include <thread>
@@ -1266,15 +1267,11 @@ void StartVulkanApp(){
     vulkanApp->renderLoop();
 }
 
-void StartWebRTCApp(){
-    API api;
-    api.Print();
-    api.StartServer();
-}
-
 int main(int argc, char * argv[])
 {
-    StartWebRTCApp();
+    WebRTC_Handler webRtcHandler;
+    webRtcHandler.StartWebRTCApp();
+    webRtcHandler.StopWebRTCApp();
     return 0;
     for (size_t i = 0; i < argc; i++) { VulkanApp::args.push_back(argv[i]); };
     StartCudaApp();

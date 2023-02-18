@@ -13,6 +13,7 @@ endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set(WEBRTC_BUILD ${WEBRTC_SRC}/out/Debug)
+    add_compile_definitions(_DEBUG)
 else()
     set(WEBRTC_BUILD ${WEBRTC_SRC}/out/Release)
 endif()

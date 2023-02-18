@@ -1,23 +1,28 @@
 #include "API.h"
 #include "Context.h"
 #include "WebRTCPlugin.h"
+#include "Logger.h"
 
 using namespace webrtc;
 
 WebRTCPlugin* plugin;
-Context* ctx;
 
-void API::Print(){
-    std::cout << "What" << std::endl;
+API::API() {
+    plugin = new WebRTCPlugin;
+    DebugLog("WebRTCPlugin Created!");
 }
 
-void API::StartServer(){
-    plugin = new WebRTCPlugin;
-    ctx = new Context;
-
-    PeerConnectionObject* pco = plugin->ContextCreatePeerConnection(ctx);
-    printf("WebRTCPlugin created!!\n");
-
+API::~API() {
+    DebugLog("WebRTCPlugin Destroyed!");
     delete plugin;
+}
+
+void* API::ContextCreate() {
+    Context* ctx = new Context;
+    return ctx;
+}
+
+void API::ContextDestroy(void *ctx) {
     delete ctx;
 }
+
