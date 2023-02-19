@@ -1,9 +1,14 @@
 #include "stdio.h"
 #include "Vulkan/VulkanBase.h"
 #include "Cuda/CudaContext.h"
-
+#include "Signalling_Handler.h"
+#include "WebRTC_Handler.h"
+#include "iostream"
 #include <chrono>
 #include <thread>
+#include <signal.h>
+
+#include "Webrtc/API.h"
 
 #define USE_STAGING true
 
@@ -1264,11 +1269,43 @@ void StartVulkanApp(){
     vulkanApp->renderLoop();
 }
 
+Signalling_Handler* signalling_handler;
+
+void OnOffer(std::string offer){
+    std::cout << "Got offer: " << offer << std::endl;
+}
+
+void StartSignallingServer(){
+    signalling_handler = new Signalling_Handler(3001, OnOffer);
+    signalling_handler->StartSignalling();
+}
+void StopSignallingServer(){
+    signalling_handler->StopSignalling();
+    delete signalling_handler;
+}
+
+volatile sig_atomic_t stop;
+void sigterm_callback(int signum) {
+    stop = 1;
+}
+
 int main(int argc, char * argv[])
 {
+    signal(SIGTERM, sigterm_callback);
+
+    StartSignallingServer();
+
+    WebRTC_Handler webRtcHandler;
+    webRtcHandler.StartWebRTCApp();
+    while(!stop);
+    StopSignallingServer();
+    webRtcHandler.StopWebRTCApp();
+    return EXIT_SUCCESS;
+
     for (size_t i = 0; i < argc; i++) { VulkanApp::args.push_back(argv[i]); };
     StartCudaApp();
     StartVulkanApp();
-    delete(vulkanApp);
+
+    delete vulkanApp;
     delete cuda_ctx;
 }

@@ -1,0 +1,14 @@
+{
+  "name": "clientapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "App.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "owais",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
