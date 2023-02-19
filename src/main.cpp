@@ -1,7 +1,7 @@
 #include "stdio.h"
 #include "Vulkan/VulkanBase.h"
 #include "Cuda/CudaContext.h"
-#include "Signalling/Signalling.h"
+#include "Signalling_Handler.h"
 #include "WebRTC_Handler.h"
 #include "iostream"
 #include <chrono>
@@ -1269,14 +1269,19 @@ void StartVulkanApp(){
     vulkanApp->renderLoop();
 }
 
-Signalling* signalling;
+Signalling_Handler* signalling_handler;
+
+void OnOffer(std::string offer){
+    std::cout << "Got offer: " << offer << std::endl;
+}
+
 void StartSignallingServer(){
-    signalling = new Signalling();
-    signalling->StartServer(3001);
+    signalling_handler = new Signalling_Handler(3001, OnOffer);
+    signalling_handler->StartSignalling();
 }
 void StopSignallingServer(){
-    signalling->StopServer();
-    delete signalling;
+    signalling_handler->StopSignalling();
+    delete signalling_handler;
 }
 
 volatile sig_atomic_t stop;
