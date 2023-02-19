@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "Vulkan/VulkanBase.h"
 #include "Cuda/CudaContext.h"
+#include "Signalling/Signalling.h"
 #include "WebRTC_Handler.h"
 #include "iostream"
 #include <chrono>
@@ -1268,6 +1269,16 @@ void StartVulkanApp(){
     vulkanApp->renderLoop();
 }
 
+Signalling* signalling;
+void StartSignallingServer(){
+    signalling = new Signalling();
+    signalling->StartServer(3001);
+}
+void StopSignallingServer(){
+    signalling->StopServer();
+    delete signalling;
+}
+
 volatile sig_atomic_t stop;
 void sigterm_callback(int signum) {
     stop = 1;
@@ -1277,15 +1288,19 @@ int main(int argc, char * argv[])
 {
     signal(SIGTERM, sigterm_callback);
 
+    StartSignallingServer();
+
     WebRTC_Handler webRtcHandler;
     webRtcHandler.StartWebRTCApp();
     while(!stop);
+    StopSignallingServer();
     webRtcHandler.StopWebRTCApp();
+    return EXIT_SUCCESS;
 
-    return 0;
     for (size_t i = 0; i < argc; i++) { VulkanApp::args.push_back(argv[i]); };
     StartCudaApp();
     StartVulkanApp();
-    delete(vulkanApp);
+
+    delete vulkanApp;
     delete cuda_ctx;
 }

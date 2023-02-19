@@ -1,7 +1,7 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 #include <thread>
-#include "Server.h"
+#include "Signalling.h"
 
 typedef websocketpp::server<websocketpp::config::asio> server;
 
@@ -15,6 +15,27 @@ typedef server::message_ptr message_ptr;
 // Create a server endpoint
 server echo_server;
 std::thread* server_th;
+
+bool IsClientConnected = false;
+websocketpp::connection_hdl client_connection_hdl;
+server::connection_ptr client_connection_ptr;
+
+void on_connect(server* s, websocketpp::connection_hdl hdl){
+    if(IsClientConnected){
+        server::connection_ptr con = echo_server.get_con_from_hdl(client_connection_hdl);
+        con->close(websocketpp::close::status::blank, "Client Already Connected");
+        return;
+    }
+    std::cout << "on connect " << std::endl;
+    client_connection_hdl = hdl;
+    client_connection_ptr = echo_server.get_con_from_hdl(client_connection_hdl);
+    IsClientConnected = true;
+}
+
+void on_disconnect(server* s, websocketpp::connection_hdl hdl){
+    std::cout << "on disconnect " << std::endl;
+    IsClientConnected = false;
+}
 
 // Define a callback to handle incoming messages
 void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
@@ -37,30 +58,7 @@ void on_message(server* s, websocketpp::connection_hdl hdl, message_ptr msg) {
     }
 }
 
-using namespace std::chrono;
-std::chrono::time_point<std::chrono::system_clock> start, end;
-
-void StartTimer(){
-    start = std::chrono::system_clock::now();
-}
-void PrintCurrentTime(){
-    end = std::chrono::system_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
-    StartTimer();
-}
-
-volatile sig_atomic_t stop;
-
-void StopServer(int signum){
-    echo_server.stop();
-//    server_th->join();
-//    delete server_th;
-}
-
-int main() {
-    signal(SIGTERM, StopServer);
-
+void Signalling::StartServer(int port){
     try {
         // Set logging settings
         echo_server.set_access_channels(websocketpp::log::alevel::all);
@@ -70,23 +68,38 @@ int main() {
         echo_server.init_asio();
 
         // Register our message handler
+        echo_server.set_open_handler(bind(&on_connect,&echo_server,::_1));
         echo_server.set_message_handler(bind(&on_message,&echo_server,::_1,::_2));
+        echo_server.set_close_handler(bind(&on_disconnect,&echo_server, ::_1));
 
-        // Listen on port 9002
-        echo_server.listen(9002);
+        echo_server.listen(port);
 
         // Start the server accept loop
         echo_server.start_accept();
 
-        echo_server.run();
-//        server_th = new std::thread([](){
-//            // Start the ASIO io_service run loop
-//            echo_server.run();
-//        });
-
+        server_th = new std::thread([](){
+            // Start the ASIO io_service run loop
+            echo_server.run();
+        });
+        std::printf("Signalling Server Started!");
     } catch (websocketpp::exception const & e) {
+        StopServer();
         std::cout << e.what() << std::endl;
     } catch (...) {
         std::cout << "other exception" << std::endl;
     }
+}
+
+
+void Signalling::StopServer(){
+    echo_server.stop();
+    server_th->join();
+    delete server_th;
+    std::printf("Signalling Server stopped!");
+}
+
+void Signalling::SendMessage(std::string& msg){
+    if(client_connection_hdl.expired())
+        return;
+    client_connection_ptr->send(msg, websocketpp::frame::opcode::text);
 }

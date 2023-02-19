@@ -1,10 +1,10 @@
-add_executable(Server)
-
+add_library(Signalling STATIC)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-target_sources(Server
-        PRIVATE
-        Server.cpp
-        Server.h)
 
-target_include_directories(Server SYSTEM PRIVATE websocketpp)
-target_include_directories(Server SYSTEM PRIVATE .)
+target_sources(Signalling
+        PRIVATE
+        Signalling.cpp
+        Signalling.h)
+
+target_include_directories(Signalling SYSTEM PRIVATE websocketpp)
+target_include_directories(Signalling SYSTEM PRIVATE .)

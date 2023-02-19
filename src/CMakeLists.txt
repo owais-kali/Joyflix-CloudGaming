@@ -23,12 +23,15 @@ target_sources(VCNW
         pch.h
         WebRTC_Handler.cpp
         WebRTC_Handler.h
+        Signalling_Handler.cpp
+        Signalling_Handler.h
         main.cpp)
 
 target_link_libraries(VCNW
         VulkanBase
         CUDA_LIB
         WebRTC
+        Signalling
         ${LibCPP_OBJS}
         ${LibCPP_ABI_OBJS})
 
