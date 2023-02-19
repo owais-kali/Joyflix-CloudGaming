@@ -1,15 +1,15 @@
 #pragma once
 
+#define _Context void*
+
 namespace webrtc {
     class API {
     public:
         API();
-
         ~API();
+        _Context ContextCreate();
+        void ContextDestroy();
 
-        void* ContextCreate();
-
-        void ContextDestroy(void* ctx);
-
+        void StartWebRTCServer();
     };
 }

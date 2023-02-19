@@ -11,6 +11,7 @@ file(GLOB_RECURSE WEBRTC_HEADER
         ${WEBRTC_SRC}/*.h
         )
 
+add_subdirectory(Signalling)
 add_executable(VCNW)
 add_subdirectory(Vulkan)
 add_subdirectory(Cuda)

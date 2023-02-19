@@ -5,6 +5,7 @@
 #include "iostream"
 #include <chrono>
 #include <thread>
+#include <signal.h>
 
 #include "Webrtc/API.h"
 
@@ -1267,11 +1268,20 @@ void StartVulkanApp(){
     vulkanApp->renderLoop();
 }
 
+volatile sig_atomic_t stop;
+void sigterm_callback(int signum) {
+    stop = 1;
+}
+
 int main(int argc, char * argv[])
 {
+    signal(SIGTERM, sigterm_callback);
+
     WebRTC_Handler webRtcHandler;
     webRtcHandler.StartWebRTCApp();
+    while(!stop);
     webRtcHandler.StopWebRTCApp();
+
     return 0;
     for (size_t i = 0; i < argc; i++) { VulkanApp::args.push_back(argv[i]); };
     StartCudaApp();
