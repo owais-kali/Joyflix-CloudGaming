@@ -3,6 +3,7 @@ h1 {
   font-weight: 500;
   margin: 0 0 0.8em 0;
   padding: 0 0 0.2em 0;
+  color: white;
 }
 
 h4 {
@@ -16,6 +17,7 @@ body {
   margin: 0;
   padding: 1em;
   word-break: break-word;
+  background-color: black;
 }
 
 section {

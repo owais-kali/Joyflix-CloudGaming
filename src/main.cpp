@@ -1274,9 +1274,15 @@ Signalling_Handler* signalling_handler;
 void OnOffer(std::string offer){
     std::cout << "Got offer: " << offer << std::endl;
 }
+void OnAnswer(std::string answer){
+    std::cout << "Got offer: " << answer << std::endl;
+}
+void OnIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid){
+    std::cout << "Got ICE: " << ice << std::endl;
+}
 
 void StartSignallingServer(){
-    signalling_handler = new Signalling_Handler(3001, OnOffer);
+    signalling_handler = new Signalling_Handler(3001, OnOffer, OnAnswer, OnIceCandidate);
     signalling_handler->StartSignalling();
 }
 void StopSignallingServer(){
@@ -1297,11 +1303,12 @@ int main(int argc, char * argv[])
 
     WebRTC_Handler webRtcHandler;
     webRtcHandler.StartWebRTCApp();
+
     while(!stop);
     StopSignallingServer();
     webRtcHandler.StopWebRTCApp();
-    return EXIT_SUCCESS;
 
+    return EXIT_SUCCESS;
     for (size_t i = 0; i < argc; i++) { VulkanApp::args.push_back(argv[i]); };
     StartCudaApp();
     StartVulkanApp();
