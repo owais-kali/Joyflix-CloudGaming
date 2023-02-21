@@ -18,6 +18,8 @@ else()
     set(WEBRTC_BUILD ${WEBRTC_SRC}/out/Release)
 endif()
 
+find_package(WEBSOCKETPP REQUIRED)
+message(wsinc: ${WEBSOCKETPP_ROOT})
 find_package(CUDA REQUIRED)
 find_package(Vulkan REQUIRED)
 

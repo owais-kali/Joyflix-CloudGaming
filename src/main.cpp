@@ -1274,9 +1274,15 @@ Signalling_Handler* signalling_handler;
 void OnOffer(std::string offer){
     std::cout << "Got offer: " << offer << std::endl;
 }
+void OnAnswer(std::string answer){
+    std::cout << "Got offer: " << answer << std::endl;
+}
+void OnIceCandidate(std::string ice){
+    std::cout << "Got offer: " << ice << std::endl;
+}
 
 void StartSignallingServer(){
-    signalling_handler = new Signalling_Handler(3001, OnOffer);
+    signalling_handler = new Signalling_Handler(3001, OnOffer, OnAnswer, OnIceCandidate);
     signalling_handler->StartSignalling();
 }
 void StopSignallingServer(){

@@ -1,17 +1,19 @@
-
+#include <functional>
 #include "Signalling_Handler.h"
 
-Signalling_Handler::Signalling_Handler(int port, DelegateOnOffer onOfferCallback)
-        : Port(port), onOfferDelegate(onOfferCallback) {
-
-}
+Signalling_Handler::Signalling_Handler(int port, Signalling_Handler::DelegateOnOffer onOfferCallback,
+                                       Signalling_Handler::DelegateOnAnswer onAnswerCallback,
+                                       Signalling_Handler::DelegateOnICECandidate onIceCandidateCallback)
+        : Port(port),
+        onOfferDelegate(onOfferCallback), onAnswerDelegate(onAnswerCallback), onICECandidateDelegate(onIceCandidateCallback),
+        signalling(std::bind(&Signalling_Handler::OnMessage, this, std::placeholders::_1))
+{}
 
 Signalling_Handler::~Signalling_Handler() {
     if (signalling_started) {
         StopSignalling();
     }
 }
-
 
 void Signalling_Handler::StartSignalling() {
     signalling.StartServer(Port);
@@ -25,18 +27,7 @@ void Signalling_Handler::StopSignalling() {
     signalling.StopServer();
 }
 
-void Signalling_Handler::RegisterOnOfferCallback(DelegateOnOffer callback) {
-
+void Signalling_Handler::OnMessage(std::string msg) {
+    printf("msg: %s\n",msg.c_str());
 }
 
-void Signalling_Handler::RegisterOnAnswerCallback() {
-
-}
-
-void Signalling_Handler::RegisterOnICECallback() {
-
-}
-
-void Signalling_Handler::OnMessage() {
-
-}
