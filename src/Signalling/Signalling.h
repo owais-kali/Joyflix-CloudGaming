@@ -31,6 +31,6 @@ private:
 public:
     Signalling(DelegateOnMessage onMessageCallback);
     void StartServer(int port);
-    void SendMessage(std::string& msg);
+    void SendMessage(std::string msg);
     void StopServer();
 };

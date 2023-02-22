@@ -6,10 +6,12 @@ namespace webrtc {
     public:
         enum class RTCSdpType { Offer, PrAnswer, Answer, Rollback };
         using DelegateOnGotDescription = void (*)(webrtc::API::RTCSdpType, char*);
-    private:
+        using DelegateOnGotICECandidate = void (*)(char*, char*, int);
+
         DelegateOnGotDescription GotDescriptionCallback;
-    public:
-        API(DelegateOnGotDescription onGotDescriptionCallback);
+        DelegateOnGotICECandidate GotICECandidateCallback;
+
+        API(DelegateOnGotDescription onGotDescriptionCallback, DelegateOnGotICECandidate onGotICECandidateCallback);
         ~API();
         _Context ContextCreate();
         void ContextDestroy();

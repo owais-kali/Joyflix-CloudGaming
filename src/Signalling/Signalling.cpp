@@ -71,7 +71,7 @@ void Signalling::StopServer(){
     std::printf("Signalling Server stopped!\n");
 }
 
-void Signalling::SendMessage(std::string& msg){
+void Signalling::SendMessage(std::string msg){
     if(client_connection_hdl.expired())
         return;
     client_connection_ptr->send(msg, websocketpp::frame::opcode::text);

@@ -1,7 +1,7 @@
 #include "WebRTC_Handler.h"
 
-WebRTC_Handler::WebRTC_Handler(API::DelegateOnGotDescription onGotDescriptionCallback)
-: api(onGotDescriptionCallback)
+WebRTC_Handler::WebRTC_Handler(API::DelegateOnGotDescription onGotDescriptionCallback, API::DelegateOnGotICECandidate onGotIceCandidateCallback)
+: api(onGotDescriptionCallback, onGotIceCandidateCallback)
 {
     
 }

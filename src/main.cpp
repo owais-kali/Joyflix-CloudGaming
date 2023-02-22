@@ -1281,14 +1281,18 @@ void OnGotRemoteDescription(webrtc::API::RTCSdpType type, std::string offer){
     }
 }
 void OnGotLocalDescription(webrtc::API::RTCSdpType type, char* desc){
-    std::cout << "OnGotLocalDescription: " << &desc << std::endl;
+   signalling_handler->SendSDP(type, desc);
 }
-void OnIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid){
-    std::cout << "Got ICE: " << ice << std::endl;
+void OnGotLocalIceCandidate(char* ice, char* sdpMLineIndex, int sdpMid){
+    std::cout << "Got Local ICE: " << ice << std::endl;
+}
+
+void OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid){
+    std::cout << "Got Remote ICE: " << ice << std::endl;
 }
 
 void StartSignallingServer(){
-    signalling_handler = new Signalling_Handler(3001, OnGotRemoteDescription, OnIceCandidate);
+    signalling_handler = new Signalling_Handler(3001, OnGotRemoteDescription, OnGotRemoteIceCandidate);
     signalling_handler->StartSignalling();
 }
 void StopSignallingServer(){
@@ -1307,7 +1311,7 @@ int main(int argc, char * argv[])
 
     StartSignallingServer();
 
-    webRtcHandler = new WebRTC_Handler(OnGotLocalDescription);
+    webRtcHandler = new WebRTC_Handler(OnGotLocalDescription, OnGotLocalIceCandidate);
     webRtcHandler->StartWebRTCApp();
 
     while(!stop);

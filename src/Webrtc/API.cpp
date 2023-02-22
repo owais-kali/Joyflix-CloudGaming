@@ -5,13 +5,15 @@
 
 using namespace webrtc;
 
+API* api;
 WebRTCPlugin* plugin;
 Context* ctx;
 PeerConnectionObject* pco;
 
-API::API(DelegateOnGotDescription onGotDescriptionCallback)
-: GotDescriptionCallback(onGotDescriptionCallback)
+API::API(DelegateOnGotDescription onGotDescriptionCallback, DelegateOnGotICECandidate onGotICECandidateCallback)
+: GotDescriptionCallback(onGotDescriptionCallback), GotICECandidateCallback(onGotICECandidateCallback)
 {
+    api = this;
     plugin = new WebRTCPlugin;
     DebugLog("Plugin Created!");
 }
@@ -41,7 +43,6 @@ void GotSDPCallback(PeerConnectionObject* pco, RTCSdpType type, const char* sdp)
             std::string error;
             auto errorType =
                     plugin->PeerConnectionSetLocalDescription(ctx, pco, &desc, error);
-
             if (errorType != webrtc::RTCErrorType::NONE) {
                 std::cout << "error: " << error << std::endl;
             }
@@ -54,7 +55,7 @@ void GotSDPCallback(PeerConnectionObject* pco, RTCSdpType type, const char* sdp)
             std::string error;
 
             plugin->PeerConnectionSetLocalDescription(ctx, pco, &desc, error);
-
+            api->GotDescriptionCallback(webrtc::API::RTCSdpType::Answer, const_cast<char*>(sdp));
             LogPrint("Answer SDP: \n%s", sdp);
         } break;
         default:
@@ -67,6 +68,7 @@ void OnIceCandidate(PeerConnectionObject* pco,
                     const char* candidate,
                     const char* sdpMid,
                     const int sdpMlineIndex) {
+    api->GotICECandidateCallback((char*)candidate, (char*)sdpMid, sdpMlineIndex);
     LogPrint(
             "OnIceCandidate:\n candidate: %s\n, sdpMid: %s\n, sdpMlineIndex: %d\n",
             candidate, sdpMid, sdpMlineIndex);
