@@ -1,4 +1,3 @@
-#include "Webrtc/API.h"
 #include "WebRTC_Handler.h"
 using namespace webrtc;
 
@@ -20,3 +19,15 @@ void WebRTC_Handler::StartWebRTCApp(){
 void WebRTC_Handler::StopWebRTCApp(){
     api->ContextDestroy();
 }
+
+void WebRTC_Handler::SetLocalDescription(API::RTCSdpType sdpType, char* sdp) {
+    api->SetLocalDescription(sdpType, sdp);
+}
+
+void WebRTC_Handler::SetRemoteDescription(webrtc::API::RTCSdpType sdpType, char *sdp) {
+    api->SetRemoteDescription(sdpType, sdp);
+    if(sdpType == webrtc::API::RTCSdpType::Offer){
+        api->CreateAnswer();
+    }
+}
+

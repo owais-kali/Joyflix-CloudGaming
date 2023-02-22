@@ -21,9 +21,6 @@ Signalling_Handler::~Signalling_Handler() {
 void Signalling_Handler::StartSignalling() {
     signalling.StartServer(Port);
     signalling_started = true;
-
-    std::string sdhawd = "asdwd";
-    onOfferDelegate(sdhawd);
 }
 
 void Signalling_Handler::StopSignalling() {

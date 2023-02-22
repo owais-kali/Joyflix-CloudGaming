@@ -84,11 +84,9 @@ RTCErrorType WebRTCPlugin::PeerConnectionSetRemoteDescription(
     Context* context,
     PeerConnectionObject* obj,
     const RTCSessionDescription* desc,
-    char* error[]) {
-  std::string error_;
+    std::string& error) {
   RTCErrorType errorType = obj->SetRemoteDescription(
-      *desc, context->GetObserver(obj->connection.get()), error_);
-  *error = ConvertString(error_);
+      *desc, context->GetObserver(obj->connection.get()), error);
   return errorType;
 }
 
@@ -108,10 +106,4 @@ char* ConvertString(const std::string str) {
 void WebRTCPlugin::AddTracks(Context* context) {
   context->AddTracks();
 }
-
-int print(){
-  printf("Hello world");
-  return 200;
-}
-
 }  // namespace webrtc

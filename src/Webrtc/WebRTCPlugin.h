@@ -198,7 +198,7 @@ class WebRTCPlugin {
       Context* context,
       PeerConnectionObject* obj,
       const RTCSessionDescription* desc,
-      char* error[]);
+      std::string& error);
 
   PeerConnectionInterface::SignalingState PeerConnectionSignalingState(
       PeerConnectionObject* obj);

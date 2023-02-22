@@ -7,6 +7,7 @@ using namespace webrtc;
 
 WebRTCPlugin* plugin;
 Context* ctx;
+PeerConnectionObject* pco;
 
 API::API() {
     plugin = new WebRTCPlugin;
@@ -76,10 +77,40 @@ void CreateOffer(PeerConnectionObject* pco) {
 }
 
 void API::StartWebRTCServer() {
-    PeerConnectionObject* pco = plugin->ContextCreatePeerConnection(ctx);
+    pco = plugin->ContextCreatePeerConnection(ctx);
     plugin->PeerConnectionRegisterCallbackCreateSD(pco, OnSuccess, nullptr);
     plugin->PeerConnectionRegisterOnIceCandidate(pco, OnIceCandidate);
     plugin->AddTracks(ctx);
-    CreateOffer(pco);
+//    CreateOffer(pco);
 }
 
+void API::SetLocalDescription(API::RTCSdpType type, char *sdp) {
+    switch (type) {
+        case RTCSdpType::Offer:
+            RTCSessionDescription desc = {webrtc::RTCSdpType::Offer, sdp};
+            std::string err;
+            if(plugin->PeerConnectionSetLocalDescription(ctx, pco, &desc, err)!=RTCErrorType::NONE)
+            {
+                DebugLog("%s",err.c_str());
+            }
+            break;
+    }
+}
+
+void API::SetRemoteDescription(API::RTCSdpType type, char *sdp) {
+    switch (type) {
+        case RTCSdpType::Offer:
+            RTCSessionDescription desc = {webrtc::RTCSdpType::Offer, sdp};
+            std::string err;
+            if(plugin->PeerConnectionSetRemoteDescription(ctx, pco, &desc, err)!=RTCErrorType::NONE)
+            {
+                DebugLog("%s",err.c_str());
+            }
+            break;
+    }
+}
+
+void API::CreateAnswer() {
+    RTCOfferAnswerOptions options = {true, true};
+    plugin->PeerConnectionCreateAnswer(pco, &options);
+}

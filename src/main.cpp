@@ -1269,10 +1269,16 @@ void StartVulkanApp(){
     vulkanApp->renderLoop();
 }
 
+WebRTC_Handler* webRtcHandler;
 Signalling_Handler* signalling_handler;
 
+bool offer_is_set;
 void OnOffer(std::string offer){
-    std::cout << "Got offer: " << offer << std::endl;
+    if(!offer_is_set) {
+        std::cout << offer << std::endl;
+        webRtcHandler->SetRemoteDescription(webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
+        offer_is_set = true;
+    }
 }
 void OnAnswer(std::string answer){
     std::cout << "Got offer: " << answer << std::endl;
@@ -1301,12 +1307,13 @@ int main(int argc, char * argv[])
 
     StartSignallingServer();
 
-    WebRTC_Handler webRtcHandler;
-    webRtcHandler.StartWebRTCApp();
+    webRtcHandler = new WebRTC_Handler;
+    webRtcHandler->StartWebRTCApp();
 
     while(!stop);
+
     StopSignallingServer();
-    webRtcHandler.StopWebRTCApp();
+    webRtcHandler->StopWebRTCApp();
 
     return EXIT_SUCCESS;
     for (size_t i = 0; i < argc; i++) { VulkanApp::args.push_back(argv[i]); };
