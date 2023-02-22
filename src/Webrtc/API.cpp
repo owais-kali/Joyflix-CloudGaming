@@ -9,7 +9,9 @@ WebRTCPlugin* plugin;
 Context* ctx;
 PeerConnectionObject* pco;
 
-API::API() {
+API::API(DelegateOnGotDescription onGotDescriptionCallback)
+: GotDescriptionCallback(onGotDescriptionCallback)
+{
     plugin = new WebRTCPlugin;
     DebugLog("Plugin Created!");
 }
@@ -30,7 +32,7 @@ void API::ContextDestroy() {
     DebugLog("Context Destroyed!");
 }
 
-void OnSuccess(PeerConnectionObject* pco, RTCSdpType type, const char* sdp) {
+void GotSDPCallback(PeerConnectionObject* pco, RTCSdpType type, const char* sdp) {
     switch (type) {
         case RTCSdpType::Offer: {
             RTCSessionDescription desc = {};
@@ -43,8 +45,6 @@ void OnSuccess(PeerConnectionObject* pco, RTCSdpType type, const char* sdp) {
             if (errorType != webrtc::RTCErrorType::NONE) {
                 std::cout << "error: " << error << std::endl;
             }
-
-            std::cout << "Offer: \n" << sdp << std::endl;
         } break;
 
         case RTCSdpType::Answer: {
@@ -54,6 +54,7 @@ void OnSuccess(PeerConnectionObject* pco, RTCSdpType type, const char* sdp) {
             std::string error;
 
             plugin->PeerConnectionSetLocalDescription(ctx, pco, &desc, error);
+
             LogPrint("Answer SDP: \n%s", sdp);
         } break;
         default:
@@ -78,7 +79,7 @@ void CreateOffer(PeerConnectionObject* pco) {
 
 void API::StartWebRTCServer() {
     pco = plugin->ContextCreatePeerConnection(ctx);
-    plugin->PeerConnectionRegisterCallbackCreateSD(pco, OnSuccess, nullptr);
+    plugin->PeerConnectionRegisterCallbackCreateSD(pco, GotSDPCallback, nullptr);
     plugin->PeerConnectionRegisterOnIceCandidate(pco, OnIceCandidate);
     plugin->AddTracks(ctx);
 //    CreateOffer(pco);

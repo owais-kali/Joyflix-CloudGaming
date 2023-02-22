@@ -7,7 +7,7 @@ using namespace nlohmann;
 Signalling_Handler::Signalling_Handler(int port, Signalling_Handler::DelegateOnGotDescription onGotDescriptionCallback,
                                        Signalling_Handler::DelegateOnICECandidate onIceCandidateCallback)
         : Port(port),
-        onOnGotDescriptionDelegate(onGotDescriptionCallback), onICECandidateDelegate(onIceCandidateCallback),
+        onGotDescriptionDelegate(onGotDescriptionCallback), onICECandidateDelegate(onIceCandidateCallback),
         signalling(std::bind(&Signalling_Handler::OnMessage, this, std::placeholders::_1))
 {}
 
@@ -33,7 +33,7 @@ void Signalling_Handler::OnMessage(std::string msg) {
 
     if(type=="offer"){
         std::string sdp = data["data"]["sdp"].get<std::string>();
-        onOnGotDescriptionDelegate(webrtc::API::RTCSdpType::Offer ,sdp);
+        onGotDescriptionDelegate(webrtc::API::RTCSdpType::Offer ,sdp);
         return;
     }
     if(type=="candidate"){

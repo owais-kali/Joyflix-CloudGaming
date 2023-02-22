@@ -1,14 +1,15 @@
 #pragma once
-
 #define _Context void*
 
 namespace webrtc {
     class API {
-
     public:
         enum class RTCSdpType { Offer, PrAnswer, Answer, Rollback };
-
-        API();
+        using DelegateOnGotDescription = void (*)(webrtc::API::RTCSdpType, char*);
+    private:
+        DelegateOnGotDescription GotDescriptionCallback;
+    public:
+        API(DelegateOnGotDescription onGotDescriptionCallback);
         ~API();
         _Context ContextCreate();
         void ContextDestroy();
@@ -18,5 +19,7 @@ namespace webrtc {
         void SetRemoteDescription(RTCSdpType type, char* sdp);
 
         void CreateAnswer();
+
+
     };
 }

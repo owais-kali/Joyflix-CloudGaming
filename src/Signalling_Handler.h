@@ -10,7 +10,7 @@ private:
     bool signalling_started;
     Signalling signalling;
     int Port;
-    DelegateOnGotDescription onOnGotDescriptionDelegate;
+    DelegateOnGotDescription onGotDescriptionDelegate;
     DelegateOnICECandidate onICECandidateDelegate;
 
     void OnMessage(std::string msg);

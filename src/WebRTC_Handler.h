@@ -1,9 +1,12 @@
 #pragma once
 #include "Webrtc/API.h"
 
+using namespace webrtc;
 class WebRTC_Handler {
+private:
+    API api;
 public:
-    WebRTC_Handler();
+    WebRTC_Handler(API::DelegateOnGotDescription onGotDescriptionCallback);
     ~WebRTC_Handler();
     void StartWebRTCApp();
     void StopWebRTCApp();

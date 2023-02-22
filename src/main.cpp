@@ -1280,8 +1280,8 @@ void OnGotRemoteDescription(webrtc::API::RTCSdpType type, std::string offer){
         offer_is_set = true;
     }
 }
-void OnGotLocalDescription(std::string answer){
-    std::cout << "Got offer: " << answer << std::endl;
+void OnGotLocalDescription(webrtc::API::RTCSdpType type, char* desc){
+    std::cout << "OnGotLocalDescription: " << &desc << std::endl;
 }
 void OnIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid){
     std::cout << "Got ICE: " << ice << std::endl;
@@ -1307,7 +1307,7 @@ int main(int argc, char * argv[])
 
     StartSignallingServer();
 
-    webRtcHandler = new WebRTC_Handler;
+    webRtcHandler = new WebRTC_Handler(OnGotLocalDescription);
     webRtcHandler->StartWebRTCApp();
 
     while(!stop);
