@@ -1273,14 +1273,14 @@ WebRTC_Handler* webRtcHandler;
 Signalling_Handler* signalling_handler;
 
 bool offer_is_set;
-void OnOffer(std::string offer){
+void OnGotRemoteDescription(webrtc::API::RTCSdpType type, std::string offer){
     if(!offer_is_set) {
         std::cout << offer << std::endl;
         webRtcHandler->SetRemoteDescription(webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
         offer_is_set = true;
     }
 }
-void OnAnswer(std::string answer){
+void OnGotLocalDescription(std::string answer){
     std::cout << "Got offer: " << answer << std::endl;
 }
 void OnIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid){
@@ -1288,7 +1288,7 @@ void OnIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid){
 }
 
 void StartSignallingServer(){
-    signalling_handler = new Signalling_Handler(3001, OnOffer, OnAnswer, OnIceCandidate);
+    signalling_handler = new Signalling_Handler(3001, OnGotRemoteDescription, OnIceCandidate);
     signalling_handler->StartSignalling();
 }
 void StopSignallingServer(){

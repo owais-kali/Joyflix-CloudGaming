@@ -4,11 +4,10 @@
 
 using namespace nlohmann;
 
-Signalling_Handler::Signalling_Handler(int port, Signalling_Handler::DelegateOnOffer onOfferCallback,
-                                       Signalling_Handler::DelegateOnAnswer onAnswerCallback,
+Signalling_Handler::Signalling_Handler(int port, Signalling_Handler::DelegateOnGotDescription onGotDescriptionCallback,
                                        Signalling_Handler::DelegateOnICECandidate onIceCandidateCallback)
         : Port(port),
-        onOfferDelegate(onOfferCallback), onAnswerDelegate(onAnswerCallback), onICECandidateDelegate(onIceCandidateCallback),
+        onOnGotDescriptionDelegate(onGotDescriptionCallback), onICECandidateDelegate(onIceCandidateCallback),
         signalling(std::bind(&Signalling_Handler::OnMessage, this, std::placeholders::_1))
 {}
 
@@ -34,7 +33,7 @@ void Signalling_Handler::OnMessage(std::string msg) {
 
     if(type=="offer"){
         std::string sdp = data["data"]["sdp"].get<std::string>();
-        onOfferDelegate(sdp);
+        onOnGotDescriptionDelegate(webrtc::API::RTCSdpType::Offer ,sdp);
         return;
     }
     if(type=="candidate"){
@@ -44,5 +43,9 @@ void Signalling_Handler::OnMessage(std::string msg) {
         onICECandidateDelegate(candidate, sdpMLineIndex, sdpMid);
         return;
     }
+}
+
+void Signalling_Handler::SendSDP(webrtc::API::RTCSdpType type, std::string desc) {
+
 }
 

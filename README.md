@@ -42,8 +42,8 @@ fully compatible with multi-platform like Desktop, Android, IOS.
 * [x] Create CudaApp
 * [ ] Create Nvenc Encoder
 * [ ] Add WebRTC(C++) and Signalling server
-* [ ] Create simple webapp using nodejs
-* [ ] Exchange offer & answer and Connect WebRTC(C++) to webapp 
+* [x] Create simple webapp using nodejs
+* [x] Exchange offer & answer and Connect WebRTC(C++) to webapp 
 * [ ] Stream Encoded video to web browser using webrtc 
 * [ ] Send input data from webapp to WebRTC(C++) using DataChannel
 * [ ] Integrate this code to wine-headless repo
