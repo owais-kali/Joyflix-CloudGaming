@@ -22,6 +22,7 @@ public:
     void StopSignalling();
 
     void SendSDP(webrtc::API::RTCSdpType type ,std::string desc);
+    void SendICE(char* candidate, char* sdpMid, int sdpMlineIndex);
 };
 
 

@@ -41,11 +41,8 @@ void GotSDPCallback(PeerConnectionObject* pco, RTCSdpType type, const char* sdp)
             desc.sdp = sdp;
             desc.type = type;
             std::string error;
-            auto errorType =
-                    plugin->PeerConnectionSetLocalDescription(ctx, pco, &desc, error);
-            if (errorType != webrtc::RTCErrorType::NONE) {
-                std::cout << "error: " << error << std::endl;
-            }
+            api->GotDescriptionCallback(webrtc::API::RTCSdpType::Offer, const_cast<char*>(sdp));
+            LogPrint("Offer SDP: \n%s", sdp);
         } break;
 
         case RTCSdpType::Answer: {
@@ -54,7 +51,6 @@ void GotSDPCallback(PeerConnectionObject* pco, RTCSdpType type, const char* sdp)
             desc.type = type;
             std::string error;
 
-            plugin->PeerConnectionSetLocalDescription(ctx, pco, &desc, error);
             api->GotDescriptionCallback(webrtc::API::RTCSdpType::Answer, const_cast<char*>(sdp));
             LogPrint("Answer SDP: \n%s", sdp);
         } break;
@@ -69,9 +65,6 @@ void OnIceCandidate(PeerConnectionObject* pco,
                     const char* sdpMid,
                     const int sdpMlineIndex) {
     api->GotICECandidateCallback((char*)candidate, (char*)sdpMid, sdpMlineIndex);
-    LogPrint(
-            "OnIceCandidate:\n candidate: %s\n, sdpMid: %s\n, sdpMlineIndex: %d\n",
-            candidate, sdpMid, sdpMlineIndex);
 }
 
 void CreateOffer(PeerConnectionObject* pco) {
@@ -84,7 +77,6 @@ void API::StartWebRTCServer() {
     plugin->PeerConnectionRegisterCallbackCreateSD(pco, GotSDPCallback, nullptr);
     plugin->PeerConnectionRegisterOnIceCandidate(pco, OnIceCandidate);
     plugin->AddTracks(ctx);
-//    CreateOffer(pco);
 }
 
 void API::SetLocalDescription(API::RTCSdpType type, char *sdp) {
@@ -113,7 +105,13 @@ void API::SetRemoteDescription(API::RTCSdpType type, char *sdp) {
     }
 }
 
+void API::AddICECandidate(char *candidate, char *sdpMLineIndex, int sdpMid) {
+    RTCIceCandidateInit options = {candidate, sdpMLineIndex, sdpMid};
+    plugin->PeerConnectionAddIceCandidate(pco,candidate, sdpMLineIndex, sdpMid);
+}
+
 void API::CreateAnswer() {
     RTCOfferAnswerOptions options = {true, true};
     plugin->PeerConnectionCreateAnswer(pco, &options);
 }
+

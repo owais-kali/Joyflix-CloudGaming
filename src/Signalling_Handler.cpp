@@ -66,3 +66,24 @@ void Signalling_Handler::SendSDP(webrtc::API::RTCSdpType type, std::string desc)
     }
 }
 
+void Signalling_Handler::SendICE(char* candidate, char* sdpMlineIndex, int sdpMid){
+    json data = json::parse(R"(
+                {
+                  "type": "candidate",
+                  "from": "9dc9690c-183f-404a-bb7e-3e57f5a59566",
+                  "data": {
+                    "candidate": "",
+                    "sdpMLineIndex": "",
+                    "sdpMid": 0,
+                    "connectionId": "9dc9690c-183f-404a-bb7e-3e57f5a59566"
+                  }
+                }
+            )");
+    data["data"]["candidate"] = candidate;
+    data["data"]["sdpMlineIndex"] = sdpMlineIndex;
+    data["data"]["sdpMid"] = sdpMid;
+    printf("SendICE: \n%s\n", data.dump().c_str());
+
+    signalling.SendMessage(data.dump());
+}
+

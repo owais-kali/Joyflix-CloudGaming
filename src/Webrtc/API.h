@@ -20,6 +20,8 @@ namespace webrtc {
         void SetLocalDescription(RTCSdpType type, char* sdp);
         void SetRemoteDescription(RTCSdpType type, char* sdp);
 
+        void AddICECandidate(char* candidate, char* sdpMLineIndex, int sdpMid);
+
         void CreateAnswer();
 
 

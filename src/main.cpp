@@ -12,7 +12,7 @@
 
 #define USE_STAGING true
 
-class VulkanApp : public VulkanBase{
+class VulkanApp : public VulkanBase {
 public:
     // Vertex layout used in this example
     struct Vertex {
@@ -38,7 +38,7 @@ public:
         VkDeviceMemory memory;
         VkBuffer buffer;
         VkDescriptorBufferInfo descriptor;
-    }  uniformBufferVS;
+    } uniformBufferVS;
 
     struct {
         glm::mat4 projectionMatrix;
@@ -78,8 +78,7 @@ public:
     // Used to check the completion of queue operations (e.g. command buffer execution)
     std::vector<VkFence> queueCompleteFences;
 
-    VulkanApp() : VulkanBase(true)
-    {
+    VulkanApp() : VulkanBase(true) {
         title = "Vulkan Example - Basic indexed triangle";
         // To keep things simple, we don't use the UI overlay
         settings.overlay = false;
@@ -87,10 +86,11 @@ public:
         camera.type = Camera::CameraType::lookat;
         camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
         camera.setRotation(glm::vec3(0.0f));
-        camera.setPerspective(60.0f, (float)width / (float)height, 1.0f, 256.0f);
+        camera.setPerspective(60.0f, (float) width / (float) height, 1.0f, 256.0f);
         // Values not set here are initialized in the base class constructor
     }
-    ~VulkanApp(){
+
+    ~VulkanApp() {
         // Clean up used Vulkan resources
         // Note: Inherited destructor cleans up resources stored in base class
         vkDestroyPipeline(device, pipeline, nullptr);
@@ -110,8 +110,7 @@ public:
         vkDestroySemaphore(device, presentCompleteSemaphore, nullptr);
         vkDestroySemaphore(device, renderCompleteSemaphore, nullptr);
 
-        for (auto& fence : queueCompleteFences)
-        {
+        for (auto &fence: queueCompleteFences) {
             vkDestroyFence(device, fence, nullptr);
         }
     }
@@ -121,15 +120,11 @@ public:
     // This is necessary as implementations can offer an arbitrary number of memory types with different
     // memory properties.
     // You can check http://vulkan.gpuinfo.org/ for details on different memory configurations
-    uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
-    {
+    uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) {
         // Iterate over all memory types available for the device used in this example
-        for (uint32_t i = 0; i < deviceMemoryProperties.memoryTypeCount; i++)
-        {
-            if ((typeBits & 1) == 1)
-            {
-                if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
-                {
+        for (uint32_t i = 0; i < deviceMemoryProperties.memoryTypeCount; i++) {
+            if ((typeBits & 1) == 1) {
+                if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
                     return i;
                 }
             }
@@ -140,8 +135,7 @@ public:
     }
 
     // Create the Vulkan synchronization primitives used in this example
-    void prepareSynchronizationPrimitives()
-    {
+    void prepareSynchronizationPrimitives() {
         // Semaphores (Used for correct command ordering)
         VkSemaphoreCreateInfo semaphoreCreateInfo = {};
         semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -159,16 +153,14 @@ public:
         // Create in signaled state so we don't wait on first render of each command buffer
         fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         queueCompleteFences.resize(drawCmdBuffers.size());
-        for (auto& fence : queueCompleteFences)
-        {
+        for (auto &fence: queueCompleteFences) {
             VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
         }
     }
 
     // Get a new command buffer from the command pool
     // If begin is true, the command buffer is also started so we can start adding commands
-    VkCommandBuffer getCommandBuffer(bool begin)
-    {
+    VkCommandBuffer getCommandBuffer(bool begin) {
         VkCommandBuffer cmdBuffer;
 
         VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
@@ -180,8 +172,7 @@ public:
         VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &cmdBuffer));
 
         // If requested, also start the new command buffer
-        if (begin)
-        {
+        if (begin) {
             VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
             VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
         }
@@ -191,8 +182,7 @@ public:
 
     // End the command buffer and submit it to the queue
     // Uses a fence to ensure command buffer has finished executing before deleting it
-    void flushCommandBuffer(VkCommandBuffer commandBuffer)
-    {
+    void flushCommandBuffer(VkCommandBuffer commandBuffer) {
         assert(commandBuffer != VK_NULL_HANDLE);
 
         VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
@@ -221,8 +211,7 @@ public:
     // Build separate command buffers for every framebuffer image
     // Unlike in OpenGL all rendering commands are recorded once into command buffers that are then resubmitted to the queue
     // This allows to generate work upfront and from multiple threads, one of the biggest advantages of Vulkan
-    void buildCommandBuffers()
-    {
+    void buildCommandBuffers() {
         VkCommandBufferBeginInfo cmdBufInfo = {};
         cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         cmdBufInfo.pNext = nullptr;
@@ -230,8 +219,8 @@ public:
         // Set clear values for all framebuffer attachments with loadOp set to clear
         // We use two attachments (color and depth) that are cleared at the start of the subpass and as such we need to set clear values for both
         VkClearValue clearValues[2];
-        clearValues[0].color = { { 0.0f, 0.0f, 0.2f, 1.0f } };
-        clearValues[1].depthStencil = { 1.0f, 0 };
+        clearValues[0].color = {{0.0f, 0.0f, 0.2f, 1.0f}};
+        clearValues[1].depthStencil = {1.0f, 0};
 
         VkRenderPassBeginInfo renderPassBeginInfo = {};
         renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -244,8 +233,7 @@ public:
         renderPassBeginInfo.clearValueCount = 2;
         renderPassBeginInfo.pClearValues = clearValues;
 
-        for (int32_t i = 0; i < drawCmdBuffers.size(); ++i)
-        {
+        for (int32_t i = 0; i < drawCmdBuffers.size(); ++i) {
             // Set target frame buffer
             renderPassBeginInfo.framebuffer = frameBuffers[i];
 
@@ -257,8 +245,8 @@ public:
 
             // Update dynamic viewport state
             VkViewport viewport = {};
-            viewport.height = (float)height;
-            viewport.width = (float)width;
+            viewport.height = (float) height;
+            viewport.width = (float) width;
             viewport.minDepth = (float) 0.0f;
             viewport.maxDepth = (float) 1.0f;
             vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
@@ -272,14 +260,15 @@ public:
             vkCmdSetScissor(drawCmdBuffers[i], 0, 1, &scissor);
 
             // Bind descriptor sets describing shader binding points
-            vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+            vkCmdBindDescriptorSets(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                                    &descriptorSet, 0, nullptr);
 
             // Bind the rendering pipeline
             // The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states specified at pipeline creation time
             vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
             // Bind triangle vertex buffer (contains position and colors)
-            VkDeviceSize offsets[1] = { 0 };
+            VkDeviceSize offsets[1] = {0};
             vkCmdBindVertexBuffers(drawCmdBuffers[i], 0, 1, &vertices.buffer, offsets);
 
             // Bind triangle index buffer
@@ -297,15 +286,15 @@ public:
         }
     }
 
-    void draw(){
+    void draw() {
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
         // SRS - on macOS use swapchain helper function with common semaphores/fences for proper resize handling
-		// Get next image in the swap chain (back/front buffer)
-		prepareFrame();
+        // Get next image in the swap chain (back/front buffer)
+        prepareFrame();
 
-		// Use a fence to wait until the command buffer has finished execution before using it again
-		VK_CHECK_RESULT(vkWaitForFences(device, 1, &waitFences[currentBuffer], VK_TRUE, UINT64_MAX));
-		VK_CHECK_RESULT(vkResetFences(device, 1, &waitFences[currentBuffer]));
+        // Use a fence to wait until the command buffer has finished execution before using it again
+        VK_CHECK_RESULT(vkWaitForFences(device, 1, &waitFences[currentBuffer], VK_TRUE, UINT64_MAX));
+        VK_CHECK_RESULT(vkResetFences(device, 1, &waitFences[currentBuffer]));
 #else
         // SRS - on other platforms use original bare code with local semaphores/fences for illustrative purposes
         // Get next image in the swap chain (back/front buffer)
@@ -332,14 +321,14 @@ public:
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
         // SRS - on macOS use swapchain helper function with common semaphores/fences for proper resize handling
-		submitInfo.pWaitSemaphores = &semaphores.presentComplete;    // Semaphore(s) to wait upon before the submitted command buffer starts executing
-		submitInfo.pSignalSemaphores = &semaphores.renderComplete;   // Semaphore(s) to be signaled when command buffers have completed
+        submitInfo.pWaitSemaphores = &semaphores.presentComplete;    // Semaphore(s) to wait upon before the submitted command buffer starts executing
+        submitInfo.pSignalSemaphores = &semaphores.renderComplete;   // Semaphore(s) to be signaled when command buffers have completed
 
-		// Submit to the graphics queue passing a wait fence
-		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, waitFences[currentBuffer]));
+        // Submit to the graphics queue passing a wait fence
+        VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, waitFences[currentBuffer]));
 
-		// Present the current buffer to the swap chain
-		submitFrame();
+        // Present the current buffer to the swap chain
+        submitFrame();
 #else
         // SRS - on other platforms use original bare code with local semaphores/fences for illustrative purposes
         submitInfo.pWaitSemaphores = &presentCompleteSemaphore;      // Semaphore(s) to wait upon before the submitted command buffer starts executing
@@ -362,8 +351,7 @@ public:
 
     // Prepare vertex and index buffers for an indexed triangle
     // Also uploads them to device local memory using staging and initializes vertex input and attribute binding to match the vertex shader
-    void prepareVertices(bool useStagingBuffers)
-    {
+    void prepareVertices(bool useStagingBuffers) {
         // A note on memory management in Vulkan in general:
         //	This is a very complex topic and while it's fine for an example application to small individual memory allocations that is not
         //	what should be done a real-world application, where you should allocate large chunks of memory at once instead.
@@ -371,14 +359,14 @@ public:
         // Setup vertices
         std::vector<Vertex> vertexBuffer =
                 {
-                        { {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f } },
-                        { { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
-                        { {  0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
+                        {{1.0f,  1.0f,  0.0f}, {1.0f, 0.0f, 0.0f}},
+                        {{-1.0f, 1.0f,  0.0f}, {0.0f, 1.0f, 0.0f}},
+                        {{0.0f,  -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}
                 };
         uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(Vertex);
 
         // Setup indices
-        std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
+        std::vector<uint32_t> indexBuffer = {0, 1, 2};
         indices.count = static_cast<uint32_t>(indexBuffer.size());
         uint32_t indexBufferSize = indices.count * sizeof(uint32_t);
 
@@ -388,8 +376,7 @@ public:
 
         void *data;
 
-        if (useStagingBuffers)
-        {
+        if (useStagingBuffers) {
             // Static data like vertex and index buffer should be stored on the device memory
             // for optimal (and fastest) access by the GPU
             //
@@ -423,13 +410,15 @@ public:
             memAlloc.allocationSize = memReqs.size;
             // Request a host visible memory type that can be used to copy our data do
             // Also request it to be coherent, so that writes are visible to the GPU right after unmapping the buffer
-            memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &stagingBuffers.vertices.memory));
             // Map and copy
             VK_CHECK_RESULT(vkMapMemory(device, stagingBuffers.vertices.memory, 0, memAlloc.allocationSize, 0, &data));
             memcpy(data, vertexBuffer.data(), vertexBufferSize);
             vkUnmapMemory(device, stagingBuffers.vertices.memory);
-            VK_CHECK_RESULT(vkBindBufferMemory(device, stagingBuffers.vertices.buffer, stagingBuffers.vertices.memory, 0));
+            VK_CHECK_RESULT(
+                    vkBindBufferMemory(device, stagingBuffers.vertices.buffer, stagingBuffers.vertices.memory, 0));
 
             // Create a device local buffer to which the (host local) vertex data will be copied and which will be used for rendering
             vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
@@ -449,12 +438,14 @@ public:
             VK_CHECK_RESULT(vkCreateBuffer(device, &indexbufferInfo, nullptr, &stagingBuffers.indices.buffer));
             vkGetBufferMemoryRequirements(device, stagingBuffers.indices.buffer, &memReqs);
             memAlloc.allocationSize = memReqs.size;
-            memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &stagingBuffers.indices.memory));
             VK_CHECK_RESULT(vkMapMemory(device, stagingBuffers.indices.memory, 0, indexBufferSize, 0, &data));
             memcpy(data, indexBuffer.data(), indexBufferSize);
             vkUnmapMemory(device, stagingBuffers.indices.memory);
-            VK_CHECK_RESULT(vkBindBufferMemory(device, stagingBuffers.indices.buffer, stagingBuffers.indices.memory, 0));
+            VK_CHECK_RESULT(
+                    vkBindBufferMemory(device, stagingBuffers.indices.buffer, stagingBuffers.indices.memory, 0));
 
             // Create destination buffer with device only visibility
             indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
@@ -477,7 +468,7 @@ public:
             vkCmdCopyBuffer(copyCmd, stagingBuffers.vertices.buffer, vertices.buffer, 1, &copyRegion);
             // Index buffer
             copyRegion.size = indexBufferSize;
-            vkCmdCopyBuffer(copyCmd, stagingBuffers.indices.buffer, indices.buffer,	1, &copyRegion);
+            vkCmdCopyBuffer(copyCmd, stagingBuffers.indices.buffer, indices.buffer, 1, &copyRegion);
 
             // Flushing the command buffer will also submit it to the queue and uses a fence to ensure that all commands have been executed before returning
             flushCommandBuffer(copyCmd);
@@ -488,9 +479,7 @@ public:
             vkFreeMemory(device, stagingBuffers.vertices.memory, nullptr);
             vkDestroyBuffer(device, stagingBuffers.indices.buffer, nullptr);
             vkFreeMemory(device, stagingBuffers.indices.memory, nullptr);
-        }
-        else
-        {
+        } else {
             // Don't use staging
             // Create host-visible buffers only and use these for rendering. This is not advised and will usually result in lower rendering performance
 
@@ -505,7 +494,8 @@ public:
             vkGetBufferMemoryRequirements(device, vertices.buffer, &memReqs);
             memAlloc.allocationSize = memReqs.size;
             // VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT is host visible memory, and VK_MEMORY_PROPERTY_HOST_COHERENT_BIT makes sure writes are directly visible
-            memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &vertices.memory));
             VK_CHECK_RESULT(vkMapMemory(device, vertices.memory, 0, memAlloc.allocationSize, 0, &data));
             memcpy(data, vertexBuffer.data(), vertexBufferSize);
@@ -522,7 +512,8 @@ public:
             VK_CHECK_RESULT(vkCreateBuffer(device, &indexbufferInfo, nullptr, &indices.buffer));
             vkGetBufferMemoryRequirements(device, indices.buffer, &memReqs);
             memAlloc.allocationSize = memReqs.size;
-            memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                                  VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &indices.memory));
             VK_CHECK_RESULT(vkMapMemory(device, indices.memory, 0, indexBufferSize, 0, &data));
             memcpy(data, indexBuffer.data(), indexBufferSize);
@@ -531,8 +522,7 @@ public:
         }
     }
 
-    void setupDescriptorPool()
-    {
+    void setupDescriptorPool() {
         // We need to tell the API the number of max. requested descriptors per type
         VkDescriptorPoolSize typeCounts[1];
         // This example only uses one descriptor type (uniform buffer) and only requests one descriptor of this type
@@ -556,8 +546,7 @@ public:
         VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
     }
 
-    void setupDescriptorSetLayout()
-    {
+    void setupDescriptorSetLayout() {
         // Setup layout of descriptors used in this example
         // Basically connects the different shader stages to descriptors for binding uniform buffers, image samplers, etc.
         // So every shader binding should map to one descriptor set layout binding
@@ -587,8 +576,8 @@ public:
 
         VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
     }
-    void setupDescriptorSet()
-    {
+
+    void setupDescriptorSet() {
         // Allocate a new descriptor set from the global descriptor pool
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -615,17 +604,17 @@ public:
 
         vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
     }
+
     // Create the depth (and stencil) buffer attachments used by our framebuffers
     // Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
-    void setupDepthStencil()
-    {
+    void setupDepthStencil() {
         // Create an optimal image used as the depth stencil attachment
         VkImageCreateInfo image = {};
         image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         image.imageType = VK_IMAGE_TYPE_2D;
         image.format = depthFormat;
         // Use example's height and width
-        image.extent = { width, height, 1 };
+        image.extent = {width, height, 1};
         image.mipLevels = 1;
         image.arrayLayers = 1;
         image.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -667,12 +656,10 @@ public:
 
     // Create a frame buffer for each swap chain image
     // Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
-    void setupFrameBuffer()
-    {
+    void setupFrameBuffer() {
         // Create a frame buffer for every image in the swapchain
         frameBuffers.resize(swapChain.imageCount);
-        for (size_t i = 0; i < frameBuffers.size(); i++)
-        {
+        for (size_t i = 0; i < frameBuffers.size(); i++) {
             std::array<VkImageView, 2> attachments;
             attachments[0] = swapChain.buffers[i].view; // Color attachment is the view of the swapchain image
             attachments[1] = depthStencil.view;         // Depth/Stencil attachment is the same for all frame buffers
@@ -696,8 +683,7 @@ public:
     // This allows the driver to know up-front what the rendering will look like and is a good opportunity to optimize especially on tile-based renderers (with multiple subpasses)
     // Using sub pass dependencies also adds implicit layout transitions for the attachment used, so we don't need to add explicit image memory barriers to transform them
     // Note: Override of virtual function in the base class and called from within VulkanExampleBase::prepare
-    void setupRenderPass()
-    {
+    void setupRenderPass() {
         // This example will use a single render pass with one subpass
 
         // Descriptors for the attachments used by this renderpass
@@ -756,10 +742,13 @@ public:
         // Depth attachment
         dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
         dependencies[0].dstSubpass = 0;
-        dependencies[0].srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-        dependencies[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        dependencies[0].srcStageMask =
+                VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        dependencies[0].dstStageMask =
+                VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
         dependencies[0].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+        dependencies[0].dstAccessMask =
+                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
         dependencies[0].dependencyFlags = 0;
         // Color attachment
         dependencies[1].srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -786,26 +775,24 @@ public:
     // Vulkan loads its shaders from an immediate binary representation called SPIR-V
     // Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
     // This function loads such a shader from a binary file and returns a shader module structure
-    VkShaderModule loadSPIRVShader(std::string filename)
-    {
+    VkShaderModule loadSPIRVShader(std::string filename) {
         size_t shaderSize;
-        char* shaderCode = NULL;
+        char *shaderCode = NULL;
 
 #if defined(__ANDROID__)
         // Load shader from compressed asset
-		AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
-		assert(asset);
-		shaderSize = AAsset_getLength(asset);
-		assert(shaderSize > 0);
+        AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
+        assert(asset);
+        shaderSize = AAsset_getLength(asset);
+        assert(shaderSize > 0);
 
-		shaderCode = new char[shaderSize];
-		AAsset_read(asset, shaderCode, shaderSize);
-		AAsset_close(asset);
+        shaderCode = new char[shaderSize];
+        AAsset_read(asset, shaderCode, shaderSize);
+        AAsset_close(asset);
 #else
         std::ifstream is(filename, std::ios::binary | std::ios::in | std::ios::ate);
 
-        if (is.is_open())
-        {
+        if (is.is_open()) {
             shaderSize = is.tellg();
             is.seekg(0, std::ios::beg);
             // Copy file contents into a buffer
@@ -815,13 +802,12 @@ public:
             assert(shaderSize > 0);
         }
 #endif
-        if (shaderCode)
-        {
+        if (shaderCode) {
             // Create a new shader module that will be used for pipeline creation
             VkShaderModuleCreateInfo moduleCreateInfo{};
             moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
             moduleCreateInfo.codeSize = shaderSize;
-            moduleCreateInfo.pCode = (uint32_t*)shaderCode;
+            moduleCreateInfo.pCode = (uint32_t *) shaderCode;
 
             VkShaderModule shaderModule;
             VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
@@ -829,16 +815,13 @@ public:
             delete[] shaderCode;
 
             return shaderModule;
-        }
-        else
-        {
+        } else {
             std::cerr << "Error: Could not open shader file \"" << filename << "\"" << std::endl;
             return VK_NULL_HANDLE;
         }
     }
 
-    void preparePipelines()
-    {
+    void preparePipelines() {
         // Create the graphics pipeline used in this example
         // Vulkan uses the concept of rendering pipelines to encapsulate fixed states, replacing OpenGL's complex state machine
         // A pipeline is then stored and hashed on the GPU making pipeline changes very fast
@@ -1001,8 +984,7 @@ public:
         vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
     }
 
-    void prepareUniformBuffers()
-    {
+    void prepareUniformBuffers() {
         // Prepare and initialize a uniform buffer block containing shader uniforms
         // Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
         VkMemoryRequirements memReqs;
@@ -1029,7 +1011,8 @@ public:
         // Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
         // We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
         // Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
-        allocInfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        allocInfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         // Allocate memory for the uniform buffer
         VK_CHECK_RESULT(vkAllocateMemory(device, &allocInfo, nullptr, &(uniformBufferVS.memory)));
         // Bind memory to buffer
@@ -1043,8 +1026,7 @@ public:
         updateUniformBuffers();
     }
 
-    void updateUniformBuffers()
-    {
+    void updateUniformBuffers() {
         // Pass matrices to the shaders
         uboVS.projectionMatrix = camera.matrices.perspective;
         uboVS.viewMatrix = camera.matrices.view;
@@ -1052,15 +1034,14 @@ public:
 
         // Map uniform buffer and update it
         uint8_t *pData;
-        VK_CHECK_RESULT(vkMapMemory(device, uniformBufferVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));
+        VK_CHECK_RESULT(vkMapMemory(device, uniformBufferVS.memory, 0, sizeof(uboVS), 0, (void **) &pData));
         memcpy(pData, &uboVS, sizeof(uboVS));
         // Unmap after data has been copied
         // Note: Since we requested a host coherent memory type for the uniform buffer, the write is instantly visible to the GPU
         vkUnmapMemory(device, uniformBufferVS.memory);
     }
 
-    void prepare()
-    {
+    void prepare() {
         VulkanBase::prepare();
         prepareSynchronizationPrimitives();
         prepareVertices(USE_STAGING);
@@ -1073,15 +1054,13 @@ public:
         prepared = true;
     }
 
-    virtual void render()
-    {
+    virtual void render() {
         if (!prepared)
             return;
         draw();
     }
 
-    virtual void viewChanged()
-    {
+    virtual void viewChanged() {
         // This function is called by the base example class each time the view is changed by user input
         updateUniformBuffers();
     }
@@ -1089,8 +1068,7 @@ public:
     /*
     Submit command buffer to a queue and wait for fence until queue operations have been finished
 */
-    void submitWork(VkCommandBuffer cmdBuffer, VkQueue queue)
-    {
+    void submitWork(VkCommandBuffer cmdBuffer, VkQueue queue) {
         VkSubmitInfo submitInfo = vks::initializers::submitInfo();
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &cmdBuffer;
@@ -1105,8 +1083,9 @@ public:
     /*
         Copy framebuffer image to host visible image
     */
-    const char* imagedata;
-    bool CopyDone=false;
+    const char *imagedata;
+    bool CopyDone = false;
+
     void CopyImageData() {
         if (CopyDone) return;
         CopyDone = true;
@@ -1254,59 +1233,73 @@ public:
     }
 };
 
-VulkanApp* vulkanApp;
-CudaContext* cuda_ctx;
-void StartCudaApp(){
+VulkanApp *vulkanApp;
+CudaContext *cuda_ctx;
+
+void StartCudaApp() {
     cuda_ctx = new CudaContext();
     cuda_ctx->Init();
 }
 
-void StartVulkanApp(){
+void StartVulkanApp() {
     vulkanApp = new VulkanApp();
-    vulkanApp->initVulkan(static_cast<void*>(cuda_ctx->GetUUID().bytes));
+    vulkanApp->initVulkan(static_cast<void *>(cuda_ctx->GetUUID().bytes));
     vulkanApp->setupWindow();
     vulkanApp->prepare();
     vulkanApp->renderLoop();
 }
 
-WebRTC_Handler* webRtcHandler;
-Signalling_Handler* signalling_handler;
+WebRTC_Handler *webRtcHandler;
+Signalling_Handler *signalling_handler;
 
-bool offer_is_set;
-void OnGotRemoteDescription(webrtc::API::RTCSdpType type, std::string offer){
-    if(!offer_is_set) {
-        std::cout << offer << std::endl;
+bool offer_is_set, answer_is_set;
+
+void OnGotRemoteDescription(webrtc::API::RTCSdpType type, std::string offer) {
+    std::cout << "Got Remote Description: " << std::endl;
+    if (!offer_is_set) {
         webRtcHandler->SetRemoteDescription(webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
         offer_is_set = true;
     }
 }
-void OnGotLocalDescription(webrtc::API::RTCSdpType type, char* desc){
-   signalling_handler->SendSDP(type, desc);
-}
-void OnGotLocalIceCandidate(char* ice, char* sdpMLineIndex, int sdpMid){
-    std::cout << "Got Local ICE: " << ice << std::endl;
+
+void OnGotLocalDescription(webrtc::API::RTCSdpType type, char *desc) {
+    std::cout << "Got Local Description: " << std::endl;
+    signalling_handler->SendSDP(type, desc);
+    webRtcHandler->SetLocalDescription(type, desc);
+    answer_is_set = true;
 }
 
-void OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid){
-    std::cout << "Got Remote ICE: " << ice << std::endl;
+void OnGotLocalIceCandidate(char *candidate, char *sdpMLineIndex, int sdpMid) {
+    std::cout << "Got Local: " << std::endl;
+    signalling_handler->SendICE(candidate, sdpMLineIndex, sdpMid);
+
 }
 
-void StartSignallingServer(){
+void OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid) {
+    std::cout << "Got Remote: " << std::endl;
+    if (!offer_is_set) return;
+    if (!answer_is_set) return;
+    webRtcHandler->AddICECandidate((char *) ice.c_str(), (char *) sdpMLineIndex.c_str(), sdpMid);
+    std::cout << "Add Remote ICE: " << ice << std::endl;
+}
+
+void StartSignallingServer() {
     signalling_handler = new Signalling_Handler(3001, OnGotRemoteDescription, OnGotRemoteIceCandidate);
     signalling_handler->StartSignalling();
 }
-void StopSignallingServer(){
+
+void StopSignallingServer() {
     signalling_handler->StopSignalling();
     delete signalling_handler;
 }
 
 volatile sig_atomic_t stop;
+
 void sigterm_callback(int signum) {
     stop = 1;
 }
 
-int main(int argc, char * argv[])
-{
+int main(int argc, char *argv[]) {
     signal(SIGTERM, sigterm_callback);
 
     StartSignallingServer();
@@ -1314,7 +1307,7 @@ int main(int argc, char * argv[])
     webRtcHandler = new WebRTC_Handler(OnGotLocalDescription, OnGotLocalIceCandidate);
     webRtcHandler->StartWebRTCApp();
 
-    while(!stop);
+    while (!stop);
 
     StopSignallingServer();
     webRtcHandler->StopWebRTCApp();

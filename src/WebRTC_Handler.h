@@ -12,5 +12,6 @@ public:
     void StopWebRTCApp();
     void SetLocalDescription(webrtc::API::RTCSdpType sdpType, char* sdp);
     void SetRemoteDescription(webrtc::API::RTCSdpType sdpType, char* sdp);
+    void AddICECandidate(char* candidate, char* sdpMLineIndex, int sdpMid);
 };
 

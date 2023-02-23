@@ -30,3 +30,7 @@ void WebRTC_Handler::SetRemoteDescription(webrtc::API::RTCSdpType sdpType, char 
     }
 }
 
+void WebRTC_Handler::AddICECandidate(char *candidate, char *sdpMLineIndex, int sdpMid) {
+    api.AddICECandidate(candidate, sdpMLineIndex, sdpMid);
+}
+

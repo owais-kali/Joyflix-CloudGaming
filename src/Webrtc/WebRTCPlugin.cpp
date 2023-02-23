@@ -6,7 +6,7 @@
 
 #include "Context.h"
 #include "SSDO.h"
-
+#include "Logger.h"
 #include "api/jsep.h"
 
 namespace webrtc {
@@ -57,18 +57,6 @@ void WebRTCPlugin::PeerConnectionCreateAnswer(
   obj->CreateAnswer(*options);
 }
 
-RTCErrorType WebRTCPlugin::WPCreateIceCandidate(
-    const RTCIceCandidateInit* options,
-    IceCandidateInterface** candidate) {
-  SdpParseError error;
-  IceCandidateInterface* _candidate = CreateIceCandidate(
-      options->sdpMid, options->sdpMLineIndex, options->candidate, &error);
-  if (_candidate == nullptr)
-    return RTCErrorType::INVALID_PARAMETER;
-  *candidate = _candidate;
-  return RTCErrorType::NONE;
-}
-
 RTCErrorType WebRTCPlugin::PeerConnectionSetLocalDescription(
     Context* context,
     PeerConnectionObject* obj,
@@ -93,6 +81,20 @@ RTCErrorType WebRTCPlugin::PeerConnectionSetRemoteDescription(
 PeerConnectionInterface::SignalingState
 WebRTCPlugin::PeerConnectionSignalingState(PeerConnectionObject* obj) {
   return obj->connection->signaling_state();
+}
+
+RTCErrorType WebRTCPlugin::PeerConnectionAddIceCandidate(PeerConnectionObject* obj, char* candidate, char* sdpMLineIndex, int sdpMid)
+{
+    SdpParseError error;
+    std::unique_ptr<webrtc::IceCandidateInterface> _candidate(
+            CreateIceCandidate(sdpMLineIndex,sdpMid, candidate, &error));
+    if (!_candidate.get()) {
+        DebugError("Can't parse received candidate message. SdpParseError was: %s", error.description.c_str());
+        return RTCErrorType::INTERNAL_ERROR;
+    }
+    if (!obj->connection->AddIceCandidate(_candidate.get())){
+        DebugError("Failed to apply the received candidate: %s", error.description.c_str());
+    }
 }
 
 char* ConvertString(const std::string str) {
