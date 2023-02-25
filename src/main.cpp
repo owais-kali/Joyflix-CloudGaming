@@ -1252,33 +1252,24 @@ void StartVulkanApp() {
 WebRTC_Handler *webRtcHandler;
 Signalling_Handler *signalling_handler;
 
-bool offer_is_set, answer_is_set;
-
 void OnGotRemoteDescription(webrtc::API::RTCSdpType type, std::string offer) {
     std::cout << "Got Remote Description: " << std::endl;
-    if (!offer_is_set) {
-        webRtcHandler->SetRemoteDescription(webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
-        offer_is_set = true;
-    }
+    webRtcHandler->SetRemoteDescription(webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
 }
 
 void OnGotLocalDescription(webrtc::API::RTCSdpType type, char *desc) {
     std::cout << "Got Local Description: " << std::endl;
     signalling_handler->SendSDP(type, desc);
     webRtcHandler->SetLocalDescription(type, desc);
-    answer_is_set = true;
 }
 
 void OnGotLocalIceCandidate(char *candidate, char *sdpMLineIndex, int sdpMid) {
-    std::cout << "Got Local: " << std::endl;
+    std::cout << "Got Local ICE: " << std::endl;
     signalling_handler->SendICE(candidate, sdpMLineIndex, sdpMid);
 
 }
 
 void OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid) {
-    std::cout << "Got Remote: " << std::endl;
-    if (!offer_is_set) return;
-    if (!answer_is_set) return;
     webRtcHandler->AddICECandidate((char *) ice.c_str(), (char *) sdpMLineIndex.c_str(), sdpMid);
     std::cout << "Add Remote ICE: " << ice << std::endl;
 }

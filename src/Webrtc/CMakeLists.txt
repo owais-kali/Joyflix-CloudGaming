@@ -44,3 +44,4 @@ target_link_libraries(WebRTC
         ${WEBRTC_SRC}/out/Debug/obj/libwebrtc.a
 )
 
+add_subdirectory(examples)

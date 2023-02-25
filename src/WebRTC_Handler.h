@@ -5,6 +5,7 @@ using namespace webrtc;
 class WebRTC_Handler {
 private:
     API api;
+
 public:
     WebRTC_Handler(API::DelegateOnGotDescription onGotDescriptionCallback, API::DelegateOnGotICECandidate onGotIceCandidateCallback);
     ~WebRTC_Handler();

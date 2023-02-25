@@ -1,4 +1,10 @@
 #include "WebRTC_Handler.h"
+#include <future>
+#include <unistd.h>
+#include <csignal>
+
+std::future<void> AddICECandidateFunc;
+volatile sig_atomic_t StopAddICECandidateFunc;
 
 WebRTC_Handler::WebRTC_Handler(API::DelegateOnGotDescription onGotDescriptionCallback, API::DelegateOnGotICECandidate onGotIceCandidateCallback)
 : api(onGotDescriptionCallback, onGotIceCandidateCallback)
@@ -7,7 +13,10 @@ WebRTC_Handler::WebRTC_Handler(API::DelegateOnGotDescription onGotDescriptionCal
 }
 
 WebRTC_Handler::~WebRTC_Handler() {
-    
+    if(AddICECandidateFunc.valid()){
+        StopAddICECandidateFunc = 1;
+        AddICECandidateFunc.wait();
+    }
 }
 
 void WebRTC_Handler::StartWebRTCApp(){
@@ -31,6 +40,20 @@ void WebRTC_Handler::SetRemoteDescription(webrtc::API::RTCSdpType sdpType, char 
 }
 
 void WebRTC_Handler::AddICECandidate(char *candidate, char *sdpMLineIndex, int sdpMid) {
-    api.AddICECandidate(candidate, sdpMLineIndex, sdpMid);
+    std::string candidate_ = candidate;
+    std::string sdpMLineIndex_ = sdpMLineIndex;
+    AddICECandidateFunc = std::async([]( API* api, std::string candidate, std::string sdpMLineIndex, int sdpMid){
+        while (!StopAddICECandidateFunc) {
+            API::SignalingState state = api->GetSignallingState();
+            switch (state) {
+                case webrtc::API::kStable:
+                    printf("kStable\n");
+                    api->AddICECandidate(const_cast<char *>(candidate.c_str()),
+                                         const_cast<char *>(sdpMLineIndex.c_str()), sdpMid);
+                    return;
+            }
+            sleep(1);
+        }
+    }, &api, candidate_, sdpMLineIndex_, sdpMid);
 }
 

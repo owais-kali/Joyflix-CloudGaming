@@ -115,3 +115,21 @@ void API::CreateAnswer() {
     plugin->PeerConnectionCreateAnswer(pco, &options);
 }
 
+API::SignalingState API::GetSignallingState() {
+    PeerConnectionInterface::SignalingState state =  plugin->PeerConnectionSignalingState(pco);
+    switch (state) {
+        case PeerConnectionInterface::kHaveLocalOffer:
+            return API::SignalingState::kHaveLocalOffer;
+        case PeerConnectionInterface::kHaveRemoteOffer:
+            return API::SignalingState::kHaveRemoteOffer;
+        case PeerConnectionInterface::kStable:
+            return API::SignalingState::kStable;
+        case PeerConnectionInterface::kClosed:
+            return API::SignalingState::kClosed;
+        case PeerConnectionInterface::kHaveLocalPrAnswer:
+            return API::SignalingState::kHaveLocalPrAnswer;
+        case PeerConnectionInterface::kHaveRemotePrAnswer:
+            return API::SignalingState::kHaveRemotePrAnswer;
+    }
+}
+

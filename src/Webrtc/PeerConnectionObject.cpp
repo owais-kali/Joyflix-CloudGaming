@@ -1,8 +1,7 @@
 #include "PeerConnectionObject.h"
-
 #include <iostream>
-
 #include "Context.h"
+#include "Logger.h"
 
 namespace webrtc {
 PeerConnectionObject::PeerConnectionObject() {}
@@ -35,7 +34,7 @@ void PeerConnectionObject::OnDataChannel(
 void PeerConnectionObject::OnIceCandidate(
     const webrtc::IceCandidateInterface* candidate) {
   std::string out;
-
+  DebugLog("PeerConnectionObject::OnIceCandidate");
   if (!candidate->ToString(&out)) {
     //            DebugError("Can't make string form of sdp.");
   }
@@ -75,11 +74,11 @@ void PeerConnectionObject::OnRemoveTrack(
 // Called any time the IceConnectionState changes.
 void PeerConnectionObject::OnIceConnectionChange(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
-  //        DebugLog("OnIceConnectionChange %d", new_state);
-  //        if (onIceConnectionChange != nullptr)
-  //        {
-  //            onIceConnectionChange(this, new_state);
-  //        }
+          DebugLog("OnIceConnectionChange %d", new_state);
+          if (onIceConnectionChange != nullptr)
+          {
+              onIceConnectionChange(this, new_state);
+          }
 }
 
 void PeerConnectionObject::OnConnectionChange(

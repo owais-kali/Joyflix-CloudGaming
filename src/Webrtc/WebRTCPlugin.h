@@ -176,6 +176,8 @@ namespace webrtc {
 
 ////////////////////////////////////
     class WebRTCPlugin {
+    private:
+        const std::string stun_server_url = "stun:stun.l.google.com:19302";
     public:
         PeerConnectionObject *_ContextCreatePeerConnection(
                 Context *context,
@@ -231,6 +233,7 @@ namespace webrtc {
         }
 
         std::string GetPeerConnectionString() {
+            return stun_server_url;
             return GetEnvVarOrDefault("WEBRTC_CONNECT", "stun:stun.l.google.com:19302");
         }
     };

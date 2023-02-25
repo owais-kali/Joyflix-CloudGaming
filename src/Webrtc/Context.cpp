@@ -116,9 +116,6 @@ PeerConnectionObject* Context::CreatePeerConnection(
   obj->connection = std::move(connection.value());
   const PeerConnectionObject* ptr = obj.get();
   m_mapClients[ptr] = std::move(obj);
-
-  printf("m_mapClients.count: %lu \n", m_mapClients.size());
-
   return m_mapClients[ptr].get();
 }
 

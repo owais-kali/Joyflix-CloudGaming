@@ -5,6 +5,15 @@ namespace webrtc {
     class API {
     public:
         enum class RTCSdpType { Offer, PrAnswer, Answer, Rollback };
+        enum SignalingState {
+            kStable,
+            kHaveLocalOffer,
+            kHaveLocalPrAnswer,
+            kHaveRemoteOffer,
+            kHaveRemotePrAnswer,
+            kClosed,
+        };
+
         using DelegateOnGotDescription = void (*)(webrtc::API::RTCSdpType, char*);
         using DelegateOnGotICECandidate = void (*)(char*, char*, int);
 
@@ -24,6 +33,6 @@ namespace webrtc {
 
         void CreateAnswer();
 
-
+        SignalingState GetSignallingState();
     };
 }
