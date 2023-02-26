@@ -45,9 +45,9 @@ void WebRTCPlugin::PeerConnectionRegisterOnIceCandidate(
   obj->RegisterIceCandidate(callback);
 }
 
-void WebRTCPlugin::PeerConnectionCreateOffer(
-    PeerConnectionObject* obj,
-    const RTCOfferAnswerOptions* options) {
+void WebRTCPlugin::PeerConnectionCreateOffer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options)
+{
+    auto observer = webrtc::CreateSessionDescriptionObserver::Create(obj);
   obj->CreateOffer(*options);
 }
 
