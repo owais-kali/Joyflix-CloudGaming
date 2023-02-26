@@ -37,9 +37,7 @@ namespace webrtc {
         // rtc::scoped_refptr<DummyAudioDevice> m_audioDevice;
         std::vector<rtc::scoped_refptr<const webrtc::RTCStatsReport>>
                 m_listStatsReport;
-        std::map<const PeerConnectionObject *,
-                rtc::scoped_refptr<PeerConnectionObject>>
-                m_mapClients;
+        std::map<const PeerConnectionObject*, std::unique_ptr<PeerConnectionObject>> m_mapClients;
         std::map<const webrtc::MediaStreamInterface *,
                 std::unique_ptr<MediaStreamObserver>>
                 m_mapMediaStreamObserver;

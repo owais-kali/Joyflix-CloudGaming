@@ -13,18 +13,9 @@ namespace webrtc {
 
     enum class RTCSdpType;
 
-    class PeerConnectionObject : public webrtc::CreateSessionDescriptionObserver,
-                                 public webrtc::PeerConnectionObserver {
+    class PeerConnectionObject : public webrtc::PeerConnectionObserver {
     public:
-        PeerConnectionObject();
-
-        // webrtc::CreateSessionDescriptionObserver
-        //  This callback transfers the ownership of the |desc|.
-        void OnSuccess(webrtc::SessionDescriptionInterface *desc) override;
-
-        // The OnFailure callback takes an RTCError, which consists of an
-        // error code and a string.
-        void OnFailure(webrtc::RTCError error) override;
+        PeerConnectionObject(Context& context);
 
         // webrtc::PeerConnectionObserver
         // Triggered when the SignalingState changed.
@@ -100,9 +91,9 @@ namespace webrtc {
         rtc::scoped_refptr<webrtc::PeerConnectionInterface> connection = nullptr;
 
     public:
-        void CreateOffer(const RTCOfferAnswerOptions &options);
+        void CreateOffer(const RTCOfferAnswerOptions& options, CreateSessionDescriptionObserver* observer);
 
-        void CreateAnswer(const RTCOfferAnswerOptions &options);
+        void CreateAnswer(const RTCOfferAnswerOptions& options, CreateSessionDescriptionObserver* observer);
 
         void RegisterCallbackCreateSD(DelegateCreateSDSuccess onSuccess,
                                       DelegateCreateSDFailure onFailure) {
@@ -130,6 +121,9 @@ namespace webrtc {
 
         void AddTracks(
                 webrtc::PeerConnectionFactoryInterface *peer_connection_factory_) const;
+
+    private:
+        Context& context;
     };
 
 // conductor.cc constants

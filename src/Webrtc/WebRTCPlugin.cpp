@@ -3,7 +3,7 @@
 //
 #pragma clang diagnostic ignored "-Wunused-variable"
 #include "WebRTCPlugin.h"
-
+#include "CSDO.h"
 #include "Context.h"
 #include "Logger.h"
 #include "api/jsep.h"
@@ -34,16 +34,18 @@ void WebRTCPlugin::PeerConnectionRegisterOnIceCandidate(
   obj->RegisterIceCandidate(callback);
 }
 
-void WebRTCPlugin::PeerConnectionCreateOffer(
-    PeerConnectionObject* obj,
-    const RTCOfferAnswerOptions* options) {
-  obj->CreateOffer(*options);
+CSDO* WebRTCPlugin::PeerConnectionCreateOffer(
+        Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options) {
+    auto observer = CSDO::Create(obj);
+    obj->CreateOffer(*options, observer.get());
+    return observer.get();
 }
 
-void WebRTCPlugin::PeerConnectionCreateAnswer(
-    PeerConnectionObject* obj,
-    const RTCOfferAnswerOptions* options) {
-  obj->CreateAnswer(*options);
+CSDO* WebRTCPlugin::PeerConnectionCreateAnswer(
+        Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options) {
+    auto observer = CSDO::Create(obj);
+    obj->CreateAnswer(*options, observer.get());
+    return observer.get();
 }
 
 RTCErrorType WebRTCPlugin::PeerConnectionSetLocalDescription(

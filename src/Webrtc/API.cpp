@@ -69,7 +69,7 @@ void OnIceCandidate(PeerConnectionObject* pco,
 
 void CreateOffer(PeerConnectionObject* pco) {
     const RTCOfferAnswerOptions options{false, true};
-    plugin->PeerConnectionCreateOffer(pco, &options);
+    plugin->PeerConnectionCreateOffer(ctx, pco, &options);
 }
 
 void API::StartWebRTCServer() {
@@ -112,7 +112,7 @@ void API::AddICECandidate(char *candidate, char *sdpMLineIndex, int sdpMid) {
 
 void API::CreateAnswer() {
     RTCOfferAnswerOptions options = {true, true};
-    plugin->PeerConnectionCreateAnswer(pco, &options);
+    plugin->PeerConnectionCreateAnswer(ctx, pco, &options);
 }
 
 API::SignalingState API::GetSignallingState() {

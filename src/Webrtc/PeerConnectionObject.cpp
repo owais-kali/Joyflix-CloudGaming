@@ -4,25 +4,8 @@
 #include "Logger.h"
 
 namespace webrtc {
-    PeerConnectionObject::PeerConnectionObject() {}
-
-    void PeerConnectionObject::OnSuccess(
-            webrtc::SessionDescriptionInterface *desc) {
-        std::string out;
-        desc->ToString(&out);
-        const auto type = ConvertSdpType(desc->GetType());
-        if (onCreateSDSuccess != nullptr) {
-            onCreateSDSuccess(this, type, out.c_str());
-        }
-    }
-
-    void PeerConnectionObject::OnFailure(webrtc::RTCError error) {
-        //        //::TODO
-        //        //RTCError _error = { RTCErrorDetailType::IdpTimeout };
-        //        if (onCreateSDFailure != nullptr)
-        //        {
-        //            onCreateSDFailure(this, error.type(), error.message());
-        //        }
+    PeerConnectionObject::PeerConnectionObject(Context &context)
+            : context(context) {
     }
 
     void PeerConnectionObject::OnDataChannel(
@@ -116,18 +99,20 @@ namespace webrtc {
         //        DebugLog("OnRemoveStream");
     }
 
-    void PeerConnectionObject::CreateOffer(const RTCOfferAnswerOptions &options) {
+    void PeerConnectionObject::CreateOffer(const RTCOfferAnswerOptions &options,
+                                           CreateSessionDescriptionObserver *observer) {
         webrtc::PeerConnectionInterface::RTCOfferAnswerOptions _options;
         _options.ice_restart = options.iceRestart;
         _options.voice_activity_detection = options.voiceActivityDetection;
-        connection->CreateOffer(this, _options);
+        connection->CreateOffer(observer, _options);
     }
 
-    void PeerConnectionObject::CreateAnswer(const RTCOfferAnswerOptions &options) {
+    void PeerConnectionObject::CreateAnswer(const RTCOfferAnswerOptions &options,
+                                            CreateSessionDescriptionObserver *observer) {
         webrtc::PeerConnectionInterface::RTCOfferAnswerOptions _options;
         _options.ice_restart = options.iceRestart;
         _options.voice_activity_detection = options.voiceActivityDetection;
-        connection->CreateAnswer(this, _options);
+        connection->CreateAnswer(observer, _options);
     }
 
     RTCErrorType PeerConnectionObject::SetLocalDescription(
@@ -177,10 +162,8 @@ namespace webrtc {
         }
     }
 
-    webrtc::SdpType ConvertSdpType(RTCSdpType type)
-    {
-        switch (type)
-        {
+    webrtc::SdpType ConvertSdpType(RTCSdpType type) {
+        switch (type) {
             case RTCSdpType::Offer:
                 return webrtc::SdpType::kOffer;
             case RTCSdpType::PrAnswer:

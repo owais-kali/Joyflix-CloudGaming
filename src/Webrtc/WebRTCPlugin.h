@@ -15,7 +15,7 @@ namespace webrtc {
     class Context;
 
     class PeerConnectionObject;
-
+    class CSDO;
     class PeerConnectionInterface;
 
     enum class RTCSdpType {
@@ -191,11 +191,9 @@ namespace webrtc {
         void PeerConnectionRegisterOnIceCandidate(PeerConnectionObject *obj,
                                                   DelegateIceCandidate callback);
 
-        void PeerConnectionCreateOffer(PeerConnectionObject *obj,
-                                       const RTCOfferAnswerOptions *options);
+        CSDO* PeerConnectionCreateOffer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
 
-        void PeerConnectionCreateAnswer(PeerConnectionObject *obj,
-                                        const RTCOfferAnswerOptions *options);
+        CSDO* PeerConnectionCreateAnswer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
 
         webrtc::RTCErrorType PeerConnectionSetLocalDescription(
                 Context *context,
