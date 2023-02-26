@@ -1,7 +1,8 @@
 #pragma once
 #include "Webrtc/API.h"
 
-using namespace webrtc;
+using namespace joyflix::webrtc;
+
 class WebRTC_Handler {
 private:
     API api;
@@ -11,8 +12,8 @@ public:
     ~WebRTC_Handler();
     void StartWebRTCApp();
     void StopWebRTCApp();
-    void SetLocalDescription(webrtc::API::RTCSdpType sdpType, char* sdp);
-    void SetRemoteDescription(webrtc::API::RTCSdpType sdpType, char* sdp);
+    void SetLocalDescription(API::RTCSdpType sdpType, char* sdp);
+    void SetRemoteDescription(API::RTCSdpType sdpType, char* sdp);
     void AddICECandidate(char* candidate, char* sdpMLineIndex, int sdpMid);
 };
 

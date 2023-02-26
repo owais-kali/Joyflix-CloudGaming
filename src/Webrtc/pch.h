@@ -1,7 +1,8 @@
 #pragma once
-#pragma clang diagnostic ignored "-Wunused-variable" 
+#pragma clang diagnostic ignored "-Wunused-variable"
 
 #pragma region webRTC related
+
 #include "api/media_stream_interface.h"
 #include "api/peer_connection_interface.h"
 #include "api/create_peerconnection_factory.h"
@@ -69,20 +70,21 @@
 #pragma clang diagnostic ignored "-Wkeyword-macro"
 #pragma clang diagnostic pop
 
-namespace webrtc
-{
+namespace joyflix {
+    namespace webrtc {
 #define CoTaskMemAlloc(p) malloc(p)
 #define CoTaskMemFree(p) free(p)
 
-    using byte = unsigned char;
-    using uint8 = unsigned char;
-    using uint16 = unsigned short int;
-    using uint32 = unsigned int;
-    using uint64 = unsigned long long;
-    using int8 = signed char;
-    using int16 = signed short int;
-    using int32 = signed int;
-    using int64 = signed long long;
+        using byte = unsigned char;
+        using uint8 = unsigned char;
+        using uint16 = unsigned short int;
+        using uint32 = unsigned int;
+        using uint64 = unsigned long long;
+        using int8 = signed char;
+        using int16 = signed short int;
+        using int32 = signed int;
+        using int64 = signed long long;
 
-    const uint32 bufferedFrameNum = 3;
-} // end namespace webrtc
+        const uint32 bufferedFrameNum = 3;
+    }
+}

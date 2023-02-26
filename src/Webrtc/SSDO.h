@@ -1,19 +1,24 @@
 #pragma once
+
 #include "WebRTCPlugin.h"
 
-namespace webrtc {
-class SSDO : public webrtc::SetSessionDescriptionObserver {
- public:
-  static rtc::scoped_refptr<SSDO> Create(PeerConnectionObject* connection);
+namespace joyflix {
+    namespace webrtc {
+        class SSDO : public webrtc::SetSessionDescriptionObserver {
+        public:
+            static rtc::scoped_refptr<SSDO> Create(PeerConnectionObject *connection);
 
-  void OnSuccess() override;
-  void OnFailure(webrtc::RTCError error) override;
+            void OnSuccess() override;
 
- protected:
-  explicit SSDO(PeerConnectionObject* connection);
-  ~SSDO() = default;
+            void OnFailure(webrtc::RTCError error) override;
 
- private:
-  PeerConnectionObject* m_connection;
-};
-}  // namespace webrtc
+        protected:
+            explicit SSDO(PeerConnectionObject *connection);
+
+            ~SSDO() = default;
+
+        private:
+            PeerConnectionObject *m_connection;
+        };
+    }
+}
