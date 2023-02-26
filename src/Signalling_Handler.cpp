@@ -33,7 +33,7 @@ void Signalling_Handler::OnMessage(std::string msg) {
 
     if (type == "offer") {
         std::string sdp = data["data"]["sdp"].get<std::string>();
-        onGotDescriptionDelegate(webrtc::API::RTCSdpType::Offer, sdp);
+        onGotDescriptionDelegate(joyflix::webrtc::API::RTCSdpType::Offer, sdp);
         return;
     }
     if (type == "candidate") {
@@ -45,9 +45,9 @@ void Signalling_Handler::OnMessage(std::string msg) {
     }
 }
 
-void Signalling_Handler::SendSDP(webrtc::API::RTCSdpType type, std::string desc) {
+void Signalling_Handler::SendSDP(joyflix::webrtc::API::RTCSdpType type, std::string desc) {
     switch (type) {
-        case webrtc::API::RTCSdpType::Answer:
+        case joyflix::webrtc::API::RTCSdpType::Answer:
             json data = json::parse(R"(
                 {
                   "data": {
