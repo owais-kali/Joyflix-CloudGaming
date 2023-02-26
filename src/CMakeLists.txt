@@ -25,6 +25,7 @@ target_sources(VCNW
         WebRTC_Handler.h
         Signalling_Handler.cpp
         Signalling_Handler.h
+        VulkanApp.cpp
         main.cpp)
 
 target_link_libraries(VCNW
