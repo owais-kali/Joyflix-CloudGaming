@@ -3,33 +3,22 @@
 //
 #pragma clang diagnostic ignored "-Wunused-variable"
 #include "WebRTCPlugin.h"
-
+#include "CSDO.h"
 #include "Context.h"
-#include "SSDO.h"
-
+#include "Logger.h"
 #include "api/jsep.h"
 
 namespace webrtc {
-PeerConnectionObject* WebRTCPlugin::_ContextCreatePeerConnection(
-    Context* context,
-    const PeerConnectionInterface::RTCConfiguration& config) {
-  const auto obj = context->CreatePeerConnection(config);
-  if (obj == nullptr)
-    return nullptr;
-  const auto observer = SSDO::Create(obj);
-  context->AddObserver(obj->connection.get(), observer);
-  return obj;
-}
 
 PeerConnectionObject* WebRTCPlugin::ContextCreatePeerConnection(
     Context* context) {
   PeerConnectionInterface::RTCConfiguration config = {};
   config.sdp_semantics = SdpSemantics::kUnifiedPlan;
-  // config.enable_implicit_rollback = true;
+  config.enable_implicit_rollback = true;
   webrtc::PeerConnectionInterface::IceServer server;
   server.uri = GetPeerConnectionString();
   config.servers.push_back(server);
-  return _ContextCreatePeerConnection(context, config);
+  return context->CreatePeerConnection(config);
 }
 
 void WebRTCPlugin::PeerConnectionRegisterCallbackCreateSD(
@@ -45,28 +34,18 @@ void WebRTCPlugin::PeerConnectionRegisterOnIceCandidate(
   obj->RegisterIceCandidate(callback);
 }
 
-void WebRTCPlugin::PeerConnectionCreateOffer(
-    PeerConnectionObject* obj,
-    const RTCOfferAnswerOptions* options) {
-  obj->CreateOffer(*options);
+CSDO* WebRTCPlugin::PeerConnectionCreateOffer(
+        Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options) {
+    auto observer = CSDO::Create(obj);
+    obj->CreateOffer(*options, observer.get());
+    return observer.get();
 }
 
-void WebRTCPlugin::PeerConnectionCreateAnswer(
-    PeerConnectionObject* obj,
-    const RTCOfferAnswerOptions* options) {
-  obj->CreateAnswer(*options);
-}
-
-RTCErrorType WebRTCPlugin::WPCreateIceCandidate(
-    const RTCIceCandidateInit* options,
-    IceCandidateInterface** candidate) {
-  SdpParseError error;
-  IceCandidateInterface* _candidate = CreateIceCandidate(
-      options->sdpMid, options->sdpMLineIndex, options->candidate, &error);
-  if (_candidate == nullptr)
-    return RTCErrorType::INVALID_PARAMETER;
-  *candidate = _candidate;
-  return RTCErrorType::NONE;
+CSDO* WebRTCPlugin::PeerConnectionCreateAnswer(
+        Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options) {
+    auto observer = CSDO::Create(obj);
+    obj->CreateAnswer(*options, observer.get());
+    return observer.get();
 }
 
 RTCErrorType WebRTCPlugin::PeerConnectionSetLocalDescription(
@@ -84,17 +63,29 @@ RTCErrorType WebRTCPlugin::PeerConnectionSetRemoteDescription(
     Context* context,
     PeerConnectionObject* obj,
     const RTCSessionDescription* desc,
-    char* error[]) {
-  std::string error_;
+    std::string& error) {
   RTCErrorType errorType = obj->SetRemoteDescription(
-      *desc, context->GetObserver(obj->connection.get()), error_);
-  *error = ConvertString(error_);
+      *desc, context->GetObserver(obj->connection.get()), error);
   return errorType;
 }
 
 PeerConnectionInterface::SignalingState
 WebRTCPlugin::PeerConnectionSignalingState(PeerConnectionObject* obj) {
   return obj->connection->signaling_state();
+}
+
+RTCErrorType WebRTCPlugin::PeerConnectionAddIceCandidate(PeerConnectionObject* obj, char* candidate, char* sdpMLineIndex, int sdpMid)
+{
+    SdpParseError error;
+    std::unique_ptr<webrtc::IceCandidateInterface> _candidate(
+            CreateIceCandidate(sdpMLineIndex,sdpMid, candidate, &error));
+    if (!_candidate.get()) {
+        DebugError("Can't parse received candidate message. SdpParseError was: %s", error.description.c_str());
+        return RTCErrorType::INTERNAL_ERROR;
+    }
+    if (!obj->connection->AddIceCandidate(_candidate.get())){
+        DebugError("Failed to apply the received candidate: %s", error.description.c_str());
+    }
 }
 
 char* ConvertString(const std::string str) {
@@ -108,10 +99,4 @@ char* ConvertString(const std::string str) {
 void WebRTCPlugin::AddTracks(Context* context) {
   context->AddTracks();
 }
-
-int print(){
-  printf("Hello world");
-  return 200;
-}
-
 }  // namespace webrtc

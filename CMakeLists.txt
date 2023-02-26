@@ -18,6 +18,8 @@ else()
     set(WEBRTC_BUILD ${WEBRTC_SRC}/out/Release)
 endif()
 
+find_package(nlohmann_json 3.2.0 REQUIRED)
+find_package(WEBSOCKETPP REQUIRED)
 find_package(CUDA REQUIRED)
 find_package(Vulkan REQUIRED)
 

@@ -71,10 +71,10 @@ export class VideoPlayer {
     this.pc.addEventListener('trackevent', (e) => {
       const data = e.detail;
       if (data.track.kind == 'video') {
-        _this.videoTrackList.push(data.track);
+        // _this.videoTrackList.push(data.track);
       }
       if (data.track.kind == 'audio') {
-        _this.localStream.addTrack(data.track);
+        // _this.localStream.addTrack(data.track);
       }
       if (_this.videoTrackList.length == _this.maxVideoTrackLength) {
         _this.switchVideo(_this.videoTrackIndex);

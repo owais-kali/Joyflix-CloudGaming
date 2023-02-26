@@ -6,16 +6,15 @@
 #include <cstdarg>
 #endif
 
-namespace webrtc
-{
+namespace webrtc {
     static char buf[204800];
-    void LogPrint(const char* fmt, ...)
-    {
-        
+
+    void LogPrint(const char *fmt, ...) {
+
 #if _DEBUG
         va_list vl;
         va_start(vl, fmt);
-        
+
 #if _WIN32
         vsprintf_s(buf, fmt, vl);
 #else
@@ -25,10 +24,9 @@ namespace webrtc
         printf("%s\n", buf);
 #endif
     }
-    void checkf(bool result, const char* msg)
-    {
-        if (!result)
-        {
+
+    void checkf(bool result, const char *msg) {
+        if (!result) {
             //throw std::runtime_error(msg);
         }
     }
@@ -118,4 +116,4 @@ namespace webrtc
     }
 #endif
 
-} // end namespace webrtc
+}

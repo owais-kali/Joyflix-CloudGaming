@@ -6,5 +6,6 @@ target_sources(Signalling
         Signalling.cpp
         Signalling.h)
 
-target_include_directories(Signalling SYSTEM PRIVATE websocketpp)
+
+target_include_directories(Signalling SYSTEM PRIVATE ${WEBSOCKETPP_INCLUDE})
 target_include_directories(Signalling SYSTEM PRIVATE .)

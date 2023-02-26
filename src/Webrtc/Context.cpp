@@ -58,35 +58,6 @@ Context::~Context(){
     }
 }
 
-webrtc::SdpType ConvertSdpType(RTCSdpType type) {
-  switch (type) {
-    case RTCSdpType::Offer:
-      return webrtc::SdpType::kOffer;
-    case RTCSdpType::PrAnswer:
-      return webrtc::SdpType::kPrAnswer;
-    case RTCSdpType::Answer:
-      return webrtc::SdpType::kAnswer;
-    case RTCSdpType::Rollback:
-      return webrtc::SdpType::kRollback;
-  }
-}
-
-RTCSdpType ConvertSdpType(webrtc::SdpType type) {
-  switch (type) {
-    case webrtc::SdpType::kOffer:
-      return RTCSdpType::Offer;
-    case webrtc::SdpType::kPrAnswer:
-      return RTCSdpType::PrAnswer;
-    case webrtc::SdpType::kAnswer:
-      return RTCSdpType::Answer;
-    case webrtc::SdpType::kRollback:
-      return RTCSdpType::Rollback;
-    default:
-      // throw std::invalid_argument("Unknown SdpType");
-      return RTCSdpType::Rollback;
-  }
-}
-
 void Context::AddObserver(
     const webrtc::PeerConnectionInterface* connection,
     const rtc::scoped_refptr<SetSessionDescriptionObserver>& observer) {
@@ -100,26 +71,18 @@ SetSessionDescriptionObserver* Context::GetObserver(
 
 PeerConnectionObject* Context::CreatePeerConnection(
     const webrtc::PeerConnectionInterface::RTCConfiguration& config) {
-  rtc::scoped_refptr<PeerConnectionObject> obj =
-      rtc::scoped_refptr<PeerConnectionObject>(
-          new rtc::RefCountedObject<PeerConnectionObject>());
-
-  PeerConnectionDependencies dependencies(obj.get());
-  auto connection = m_peerConnectionFactory->CreatePeerConnectionOrError(
-      config, std::move(dependencies));
-
-  if (!connection.ok()) {
-    std::cout << "error!" << std::endl;
-    RTC_LOG(LS_ERROR) << connection.error().message();
-    return nullptr;
-  }
-  obj->connection = std::move(connection.value());
-  const PeerConnectionObject* ptr = obj.get();
-  m_mapClients[ptr] = std::move(obj);
-
-  printf("m_mapClients.count: %lu \n", m_mapClients.size());
-
-  return m_mapClients[ptr].get();
+    std::unique_ptr<PeerConnectionObject> obj = std::make_unique<PeerConnectionObject>(*this);
+    PeerConnectionDependencies dependencies(obj.get());
+    auto result = m_peerConnectionFactory->CreatePeerConnectionOrError(config, std::move(dependencies));
+    if (!result.ok())
+    {
+        RTC_LOG(LS_ERROR) << result.error().message();
+        return nullptr;
+    }
+    obj->connection = result.MoveValue();
+    PeerConnectionObject* ptr = obj.get();
+    m_mapClients[ptr] = std::move(obj);
+    return ptr;
 }
 
 void Context::AddTracks() {

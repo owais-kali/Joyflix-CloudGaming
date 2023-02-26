@@ -1,4 +1,5 @@
 #pragma once
+
 #include <iostream>
 
 #include "pch.h"
@@ -6,217 +7,228 @@
 namespace webrtc {
 
 #if defined(__linux__)
-    #define SPACE_INTERFACE_EXPORT __attribute__ ((visibility ("default")))
+#define SPACE_INTERFACE_EXPORT __attribute__ ((visibility ("default")))
 #endif
 
-namespace webrtc = ::webrtc;
+    namespace webrtc = ::webrtc;
 
-class Context;
-class PeerConnectionObject;
-class PeerConnectionInterface;
+    class Context;
 
-enum class RTCSdpType { Offer, PrAnswer, Answer, Rollback };
+    class PeerConnectionObject;
+    class CSDO;
+    class PeerConnectionInterface;
 
-struct RTCSessionDescription {
-  RTCSdpType type;
-  const char* sdp;
-};
+    enum class RTCSdpType {
+        Offer, PrAnswer, Answer, Rollback
+    };
 
-enum class RTCPeerConnectionState {
-  New,
-  Connecting,
-  Connected,
-  Disconnected,
-  Failed,
-  Closed
-};
+    struct RTCSessionDescription {
+        RTCSdpType type;
+        const char *sdp;
+    };
 
-enum class RTCIceConnectionState {
-  New,
-  Checking,
-  Connected,
-  Completed,
-  Failed,
-  Disconnected,
-  Closed,
-  Max
-};
+    enum class RTCPeerConnectionState {
+        New,
+        Connecting,
+        Connected,
+        Disconnected,
+        Failed,
+        Closed
+    };
 
-enum class RTCSignalingState {
-  Stable,
-  HaveLocalOffer,
-  HaveRemoteOffer,
-  HaveLocalPranswer,
-  HaveRemotePranswer,
-  Closed
-};
+    enum class RTCIceConnectionState {
+        New,
+        Checking,
+        Connected,
+        Completed,
+        Failed,
+        Disconnected,
+        Closed,
+        Max
+    };
 
-enum class RTCPeerConnectionEventType {
-  ConnectionStateChange,
-  DataChannel,
-  IceCandidate,
-  IceConnectionStateChange,
-  Track
-};
+    enum class RTCSignalingState {
+        Stable,
+        HaveLocalOffer,
+        HaveRemoteOffer,
+        HaveLocalPranswer,
+        HaveRemotePranswer,
+        Closed
+    };
 
-enum class SdpSemanticsType { UnifiedPlan };
+    enum class RTCPeerConnectionEventType {
+        ConnectionStateChange,
+        DataChannel,
+        IceCandidate,
+        IceConnectionStateChange,
+        Track
+    };
 
-enum class RTCIceCredentialType { Password, OAuth };
+    enum class SdpSemanticsType {
+        UnifiedPlan
+    };
 
-enum class TrackKind { Audio, Video };
+    enum class RTCIceCredentialType {
+        Password, OAuth
+    };
 
-struct RTCOfferAnswerOptions {
-  bool iceRestart;
-  bool voiceActivityDetection;
-};
+    enum class TrackKind {
+        Audio, Video
+    };
 
-struct RTCIceServer {
-  char* credential;
-  char* credentialType;
-  char** urls;
-  int urlsLength;
-  char* username;
-};
+    struct RTCOfferAnswerOptions {
+        bool iceRestart;
+        bool voiceActivityDetection;
+    };
 
-struct RTCConfiguration {
-  RTCIceServer* iceServers;
-  int iceServersLength;
-  char* iceServerPolicy;
-};
+    struct RTCIceServer {
+        char *credential;
+        char *credentialType;
+        char **urls;
+        int urlsLength;
+        char *username;
+    };
 
-struct RTCIceCandidate {
-  char* candidate;
-  char* sdpMid;
-  int sdpMLineIndex;
-};
+    struct RTCConfiguration {
+        RTCIceServer *iceServers;
+        int iceServersLength;
+        char *iceServerPolicy;
+    };
 
-struct RTCIceCandidateInit {
-  char* candidate;
-  char* sdpMid;
-  int32_t sdpMLineIndex;
-};
+    struct RTCIceCandidate {
+        char *candidate;
+        char *sdpMid;
+        int sdpMLineIndex;
+    };
 
-char* ConvertString(const std::string str);
+    struct RTCIceCandidateInit {
+        char *candidate;
+        char *sdpMid;
+        int32_t sdpMLineIndex;
+    };
 
-struct Candidate {
-  char* candidate;
-  int32_t component;
-  char* foundation;
-  char* ip;
-  uint16_t port;
-  uint32_t priority;
-  char* address;
-  char* protocol;
-  char* relatedAddress;
-  uint16_t relatedPort;
-  char* tcpType;
-  char* type;
-  char* usernameFragment;
+    char *ConvertString(const std::string str);
 
-  Candidate& operator=(const cricket::Candidate& obj) {
-    candidate = ConvertString(obj.ToString());
-    component = obj.component();
-    foundation = ConvertString(obj.foundation());
-    ip = ConvertString(obj.address().ipaddr().ToString());
-    port = obj.address().port();
-    priority = obj.priority();
-    address = ConvertString(obj.address().ToString());
-    protocol = ConvertString(obj.protocol());
-    relatedAddress = ConvertString(obj.related_address().ToString());
-    relatedPort = obj.related_address().port();
-    tcpType = ConvertString(obj.tcptype());
-    type = ConvertString(obj.type());
-    usernameFragment = ConvertString(obj.username());
-    return *this;
-  }
-};
+    struct Candidate {
+        char *candidate;
+        int32_t component;
+        char *foundation;
+        char *ip;
+        uint16_t port;
+        uint32_t priority;
+        char *address;
+        char *protocol;
+        char *relatedAddress;
+        uint16_t relatedPort;
+        char *tcpType;
+        char *type;
+        char *usernameFragment;
+
+        Candidate &operator=(const cricket::Candidate &obj) {
+            candidate = ConvertString(obj.ToString());
+            component = obj.component();
+            foundation = ConvertString(obj.foundation());
+            ip = ConvertString(obj.address().ipaddr().ToString());
+            port = obj.address().port();
+            priority = obj.priority();
+            address = ConvertString(obj.address().ToString());
+            protocol = ConvertString(obj.protocol());
+            relatedAddress = ConvertString(obj.related_address().ToString());
+            relatedPort = obj.related_address().port();
+            tcpType = ConvertString(obj.tcptype());
+            type = ConvertString(obj.type());
+            usernameFragment = ConvertString(obj.username());
+            return *this;
+        }
+    };
 
 // Callback Delegates
-using DelegateCreateSDSuccess = void (*)(PeerConnectionObject*,
-                                         RTCSdpType,
-                                         const char*);
+    using DelegateCreateSDSuccess = void (*)(PeerConnectionObject *,
+                                             RTCSdpType,
+                                             const char *);
 
-using DelegateCreateSDFailure = void (*)(PeerConnectionObject*,
-                                         webrtc::RTCErrorType,
-                                         const char*);
-using DelegateLocalSdpReady = void (*)(PeerConnectionObject*,
-                                       const char*,
-                                       const char*);
-using DelegateIceCandidate = void (*)(PeerConnectionObject*,
-                                      const char*,
-                                      const char*,
-                                      const int);
-using DelegateOnIceConnectionChange =
-    void (*)(PeerConnectionObject*,
-             webrtc::PeerConnectionInterface::IceConnectionState);
-using DelegateOnIceGatheringChange =
-    void (*)(PeerConnectionObject*,
-             webrtc::PeerConnectionInterface::IceGatheringState);
-using DelegateOnConnectionStateChange =
-    void (*)(PeerConnectionObject*,
-             webrtc::PeerConnectionInterface::PeerConnectionState);
-using DelegateOnDataChannel = void (*)(PeerConnectionObject*,
-                                       DataChannelInterface*);
-using DelegateOnRenegotiationNeeded = void (*)(PeerConnectionObject*);
-using DelegateOnTrack = void (*)(PeerConnectionObject*,
-                                 webrtc::RtpTransceiverInterface*);
-using DelegateOnRemoveTrack = void (*)(PeerConnectionObject*,
-                                       webrtc::RtpReceiverInterface*);
+    using DelegateCreateSDFailure = void (*)(PeerConnectionObject *,
+                                             webrtc::RTCErrorType,
+                                             const char *);
+    using DelegateLocalSdpReady = void (*)(PeerConnectionObject *,
+                                           const char *,
+                                           const char *);
+    using DelegateIceCandidate = void (*)(PeerConnectionObject *,
+                                          const char *,
+                                          const char *,
+                                          const int);
+    using DelegateOnIceConnectionChange =
+            void (*)(PeerConnectionObject *,
+                     webrtc::PeerConnectionInterface::IceConnectionState);
+    using DelegateOnIceGatheringChange =
+            void (*)(PeerConnectionObject *,
+                     webrtc::PeerConnectionInterface::IceGatheringState);
+    using DelegateOnConnectionStateChange =
+            void (*)(PeerConnectionObject *,
+                     webrtc::PeerConnectionInterface::PeerConnectionState);
+    using DelegateOnDataChannel = void (*)(PeerConnectionObject *,
+                                           webrtc::DataChannelInterface *);
+    using DelegateOnRenegotiationNeeded = void (*)(PeerConnectionObject *);
+    using DelegateOnTrack = void (*)(PeerConnectionObject *,
+                                     webrtc::RtpTransceiverInterface *);
+    using DelegateOnRemoveTrack = void (*)(PeerConnectionObject *,
+                                           webrtc::RtpReceiverInterface *);
+
 ////////////////////////////////////
-class WebRTCPlugin {
- public:
-  PeerConnectionObject* _ContextCreatePeerConnection(
-      Context* context,
-      const PeerConnectionInterface::RTCConfiguration& config);
+    class WebRTCPlugin {
+    private:
+        const std::string stun_server_url = "stun:stun.l.google.com:19302";
+    public:
+        PeerConnectionObject *ContextCreatePeerConnection(Context *context);
 
-  PeerConnectionObject* ContextCreatePeerConnection(Context* context);
-  void AddTracks(Context* context);
+        void AddTracks(Context *context);
 
-  void PeerConnectionRegisterCallbackCreateSD(
-      PeerConnectionObject* obj,
-      DelegateCreateSDSuccess onSuccess,
-      DelegateCreateSDFailure onFailure);
+        void PeerConnectionRegisterCallbackCreateSD(
+                PeerConnectionObject *obj,
+                DelegateCreateSDSuccess onSuccess,
+                DelegateCreateSDFailure onFailure);
 
-  void PeerConnectionRegisterOnIceCandidate(PeerConnectionObject* obj,
-                                            DelegateIceCandidate callback);
+        void PeerConnectionRegisterOnIceCandidate(PeerConnectionObject *obj,
+                                                  DelegateIceCandidate callback);
 
-  void PeerConnectionCreateOffer(PeerConnectionObject* obj,
-                                 const RTCOfferAnswerOptions* options);
-  void PeerConnectionCreateAnswer(PeerConnectionObject* obj,
-                                  const RTCOfferAnswerOptions* options);
+        CSDO* PeerConnectionCreateOffer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
 
-  RTCErrorType WPCreateIceCandidate(const RTCIceCandidateInit* options,
-                                  IceCandidateInterface** candidate);
+        CSDO* PeerConnectionCreateAnswer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
 
-  RTCErrorType PeerConnectionSetLocalDescription(
-      Context* context,
-      PeerConnectionObject* obj,
-      const RTCSessionDescription* desc,
-      std::string& error);
+        webrtc::RTCErrorType PeerConnectionSetLocalDescription(
+                Context *context,
+                PeerConnectionObject *obj,
+                const RTCSessionDescription *desc,
+                std::string &error);
 
-  RTCErrorType PeerConnectionSetRemoteDescription(
-      Context* context,
-      PeerConnectionObject* obj,
-      const RTCSessionDescription* desc,
-      char* error[]);
+        webrtc::RTCErrorType PeerConnectionSetRemoteDescription(
+                Context *context,
+                PeerConnectionObject *obj,
+                const RTCSessionDescription *desc,
+                std::string &error);
 
-  PeerConnectionInterface::SignalingState PeerConnectionSignalingState(
-      PeerConnectionObject* obj);
+        webrtc::PeerConnectionInterface::SignalingState PeerConnectionSignalingState(
+                PeerConnectionObject *obj);
 
-  std::string GetEnvVarOrDefault(const char* env_var_name,
-                                 const char* default_value) {
-    std::string value;
-    const char* env_var = getenv(env_var_name);
-    if (env_var)
-      value = env_var;
+        webrtc::RTCErrorType
+        PeerConnectionAddIceCandidate(PeerConnectionObject *obj, char *candidate, char *sdpMLineIndex, int sdpMid);
 
-    if (value.empty())
-      value = default_value;
+        std::string GetEnvVarOrDefault(const char *env_var_name,
+                                       const char *default_value) {
+            std::string value;
+            const char *env_var = getenv(env_var_name);
+            if (env_var)
+                value = env_var;
 
-    return value;
-  }
-  std::string GetPeerConnectionString() {
-    return GetEnvVarOrDefault("WEBRTC_CONNECT", "stun:stun.l.google.com:19302");
-  }
-};
-}  // namespace webrtc
+            if (value.empty())
+                value = default_value;
+
+            return value;
+        }
+
+        std::string GetPeerConnectionString() {
+            return stun_server_url;
+            return GetEnvVarOrDefault("WEBRTC_CONNECT", "stun:stun.l.google.com:19302");
+        }
+    };
+}
