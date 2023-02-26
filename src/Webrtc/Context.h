@@ -60,8 +60,4 @@ namespace webrtc {
         static uint32_t GenerateRendererId();
     };
 
-    webrtc::SdpType ConvertSdpType(RTCSdpType type);
-
-    RTCSdpType ConvertSdpType(webrtc::SdpType type);
-
 }  // namespace webrtc

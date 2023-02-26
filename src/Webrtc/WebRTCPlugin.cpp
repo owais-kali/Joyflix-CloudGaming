@@ -5,21 +5,10 @@
 #include "WebRTCPlugin.h"
 
 #include "Context.h"
-#include "SSDO.h"
 #include "Logger.h"
 #include "api/jsep.h"
 
 namespace webrtc {
-PeerConnectionObject* WebRTCPlugin::_ContextCreatePeerConnection(
-    Context* context,
-    const PeerConnectionInterface::RTCConfiguration& config) {
-  const auto obj = context->CreatePeerConnection(config);
-  if (obj == nullptr)
-    return nullptr;
-  const auto observer = SSDO::Create(obj);
-  context->AddObserver(obj->connection.get(), observer);
-  return obj;
-}
 
 PeerConnectionObject* WebRTCPlugin::ContextCreatePeerConnection(
     Context* context) {
@@ -29,7 +18,7 @@ PeerConnectionObject* WebRTCPlugin::ContextCreatePeerConnection(
   webrtc::PeerConnectionInterface::IceServer server;
   server.uri = GetPeerConnectionString();
   config.servers.push_back(server);
-  return _ContextCreatePeerConnection(context, config);
+  return context->CreatePeerConnection(config);
 }
 
 void WebRTCPlugin::PeerConnectionRegisterCallbackCreateSD(

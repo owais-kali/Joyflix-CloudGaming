@@ -58,35 +58,6 @@ Context::~Context(){
     }
 }
 
-webrtc::SdpType ConvertSdpType(RTCSdpType type) {
-  switch (type) {
-    case RTCSdpType::Offer:
-      return webrtc::SdpType::kOffer;
-    case RTCSdpType::PrAnswer:
-      return webrtc::SdpType::kPrAnswer;
-    case RTCSdpType::Answer:
-      return webrtc::SdpType::kAnswer;
-    case RTCSdpType::Rollback:
-      return webrtc::SdpType::kRollback;
-  }
-}
-
-RTCSdpType ConvertSdpType(webrtc::SdpType type) {
-  switch (type) {
-    case webrtc::SdpType::kOffer:
-      return RTCSdpType::Offer;
-    case webrtc::SdpType::kPrAnswer:
-      return RTCSdpType::PrAnswer;
-    case webrtc::SdpType::kAnswer:
-      return RTCSdpType::Answer;
-    case webrtc::SdpType::kRollback:
-      return RTCSdpType::Rollback;
-    default:
-      // throw std::invalid_argument("Unknown SdpType");
-      return RTCSdpType::Rollback;
-  }
-}
-
 void Context::AddObserver(
     const webrtc::PeerConnectionInterface* connection,
     const rtc::scoped_refptr<SetSessionDescriptionObserver>& observer) {

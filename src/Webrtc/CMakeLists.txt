@@ -23,8 +23,8 @@ target_sources(WebRTC
         Logger.h
         Context.cpp
         Context.h
-        SSDO.cpp
-        SSDO.h
+        CSDO.h
+        CSDO.cpp
         WebRTCPlugin.cpp
         WebRTCPlugin.h
         API.cpp
@@ -43,5 +43,3 @@ target_link_libraries(WebRTC
         PRIVATE
         ${WEBRTC_SRC}/out/Debug/obj/libwebrtc.a
 )
-
-add_subdirectory(examples)

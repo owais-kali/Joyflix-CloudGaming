@@ -167,7 +167,7 @@ namespace webrtc {
             void (*)(PeerConnectionObject *,
                      webrtc::PeerConnectionInterface::PeerConnectionState);
     using DelegateOnDataChannel = void (*)(PeerConnectionObject *,
-                                           DataChannelInterface *);
+                                           webrtc::DataChannelInterface *);
     using DelegateOnRenegotiationNeeded = void (*)(PeerConnectionObject *);
     using DelegateOnTrack = void (*)(PeerConnectionObject *,
                                      webrtc::RtpTransceiverInterface *);
@@ -179,10 +179,6 @@ namespace webrtc {
     private:
         const std::string stun_server_url = "stun:stun.l.google.com:19302";
     public:
-        PeerConnectionObject *_ContextCreatePeerConnection(
-                Context *context,
-                const PeerConnectionInterface::RTCConfiguration &config);
-
         PeerConnectionObject *ContextCreatePeerConnection(Context *context);
 
         void AddTracks(Context *context);
@@ -201,22 +197,22 @@ namespace webrtc {
         void PeerConnectionCreateAnswer(PeerConnectionObject *obj,
                                         const RTCOfferAnswerOptions *options);
 
-        RTCErrorType PeerConnectionSetLocalDescription(
+        webrtc::RTCErrorType PeerConnectionSetLocalDescription(
                 Context *context,
                 PeerConnectionObject *obj,
                 const RTCSessionDescription *desc,
                 std::string &error);
 
-        RTCErrorType PeerConnectionSetRemoteDescription(
+        webrtc::RTCErrorType PeerConnectionSetRemoteDescription(
                 Context *context,
                 PeerConnectionObject *obj,
                 const RTCSessionDescription *desc,
                 std::string &error);
 
-        PeerConnectionInterface::SignalingState PeerConnectionSignalingState(
+        webrtc::PeerConnectionInterface::SignalingState PeerConnectionSignalingState(
                 PeerConnectionObject *obj);
 
-        RTCErrorType
+        webrtc::RTCErrorType
         PeerConnectionAddIceCandidate(PeerConnectionObject *obj, char *candidate, char *sdpMLineIndex, int sdpMid);
 
         std::string GetEnvVarOrDefault(const char *env_var_name,
@@ -237,4 +233,4 @@ namespace webrtc {
             return GetEnvVarOrDefault("WEBRTC_CONNECT", "stun:stun.l.google.com:19302");
         }
     };
-}  // namespace webrtc
+}
