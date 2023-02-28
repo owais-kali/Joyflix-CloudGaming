@@ -4,7 +4,7 @@
 
 class Signalling_Handler {
 public:
-    using DelegateOnGotDescription = void (*)(joyflix::webrtc::API::RTCSdpType, std::string);
+    using DelegateOnGotDescription = void (*)(webrtc::API::RTCSdpType, std::string);
     using DelegateOnICECandidate = void (*)(std::string, std::string, int);
 private:
     bool signalling_started;
@@ -21,7 +21,7 @@ public:
     void StartSignalling();
     void StopSignalling();
 
-    void SendSDP(joyflix::webrtc::API::RTCSdpType type ,std::string desc);
+    void SendSDP(webrtc::API::RTCSdpType type ,std::string desc);
     void SendICE(char* candidate, char* sdpMid, int sdpMlineIndex);
 };
 

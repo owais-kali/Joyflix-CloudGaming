@@ -1,7 +1,7 @@
 #pragma once
 #include "Webrtc/API.h"
 
-using namespace joyflix::webrtc;
+using namespace webrtc;
 
 class WebRTC_Handler {
 private:
