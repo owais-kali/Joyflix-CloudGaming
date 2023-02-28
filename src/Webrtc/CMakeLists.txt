@@ -1,12 +1,9 @@
 set(CMAKE_CXX_COMPILER ${WEBRTC_SRC}/third_party/llvm-build/Release+Asserts/bin/clang)
 
-#LibCPP OBJS
-file(GLOB_RECURSE LibCPP_OBJS
-        ${WEBRTC_BUILD}/obj/buildtools/third_party/libc++/libc++/*.o
-        )
-
-file(GLOB_RECURSE LibCPP_ABI_OBJS
-        ${WEBRTC_BUILD}/obj/buildtools/third_party/libc++abi/libc++abi/*.o
+#JSON_CPP
+file(GLOB_RECURSE JSON_CPP_OBJS
+        out/Debug/obj/third_party/jsoncpp/jsoncpp/
+        ${WEBRTC_BUILD}/obj/third_party/jsoncpp/jsoncpp/*.o
         )
 
 add_library(WebRTC STATIC)
@@ -31,6 +28,8 @@ target_sources(WebRTC
         SetLocalDescriptionObserver.h
         MSO.cpp
         MSO.h
+        PeerConnectionStatsCollectorCallback.cpp
+        PeerConnectionStatsCollectorCallback.h
         WebRTCPlugin.cpp
         WebRTCPlugin.h
         API.cpp
@@ -48,4 +47,5 @@ target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/third_party/jsonc
 target_link_libraries(WebRTC
         PRIVATE
         ${WEBRTC_SRC}/out/Debug/obj/libwebrtc.a
+        ${JSON_CPP_OBJS}
         )

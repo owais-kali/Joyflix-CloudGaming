@@ -86,7 +86,13 @@ namespace webrtc {
     }
 
     PeerConnectionObject *WebRTCPlugin::ContextCreatePeerConnectionWithConfig(Context *context, const char *conf) {
-        return nullptr;
+        PeerConnectionInterface::RTCConfiguration config;
+        if (!Convert(conf, config))
+            return nullptr;
+
+        config.sdp_semantics = SdpSemantics::kUnifiedPlan;
+        config.enable_implicit_rollback = true;
+        return context->CreatePeerConnection(config);
     }
 
     void WebRTCPlugin::ContextDeletePeerConnection(Context *context, PeerConnectionObject *obj) {

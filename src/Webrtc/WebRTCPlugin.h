@@ -239,4 +239,6 @@ public:
         return GetEnvVarOrDefault("WEBRTC_CONNECT", "stun:stun.l.google.com:19302");
     }
 };
+
+extern bool Convert(const std::string& str, webrtc::PeerConnectionInterface::RTCConfiguration& config);
 }

@@ -89,6 +89,8 @@ public:
 
     void CreateAnswer(const RTCOfferAnswerOptions& options, CreateSessionDescriptionObserver* observer);
 
+    void ReceiveStatsReport(const rtc::scoped_refptr<const RTCStatsReport>& report);
+
     void RegisterCallbackCreateSD(DelegateCreateSDSuccess onSuccess, DelegateCreateSDFailure onFailure)
     {
         onCreateSDSuccess = onSuccess;

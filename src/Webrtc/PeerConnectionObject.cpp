@@ -117,6 +117,11 @@ void PeerConnectionObject::CreateAnswer(
     connection->CreateAnswer(observer, _options);
 }
 
+void PeerConnectionObject::ReceiveStatsReport(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report)
+{
+    context.AddStatsReport(report);
+}
+
 RTCErrorType PeerConnectionObject::SetLocalDescription(
     const RTCSessionDescription& desc, webrtc::SetSessionDescriptionObserver* observer, std::string& error)
 {

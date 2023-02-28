@@ -1,12 +1,33 @@
 #pragma once
 
-#include "PeerConnectionObject.h"
 #include "MSO.h"
+#include "PeerConnectionObject.h"
 
-namespace webrtc{
+namespace webrtc
+{
+const std::map<std::string, uint32_t> statsTypes = { { "codec", 0 },
+                                                     { "inbound-rtp", 1 },
+                                                     { "outbound-rtp", 2 },
+                                                     { "remote-inbound-rtp", 3 },
+                                                     { "remote-outbound-rtp", 4 },
+                                                     { "media-source", 5 },
+                                                     { "csrc", 6 },
+                                                     { "peer-connection", 7 },
+                                                     { "data-channel", 8 },
+                                                     { "stream", 9 },
+                                                     { "track", 10 },
+                                                     { "transceiver", 11 },
+                                                     { "sender", 12 },
+                                                     { "receiver", 13 },
+                                                     { "transport", 14 },
+                                                     { "sctp-transport", 15 },
+                                                     { "candidate-pair", 16 },
+                                                     { "local-candidate", 17 },
+                                                     { "remote-candidate", 18 },
+                                                     { "certificate", 19 },
+                                                     { "ice-server", 20 } };
 
 enum class RTCSdpType;
-
 class SSDO;
 
 class Context
@@ -42,26 +63,25 @@ public:
 
     // MediaStream
     rtc::scoped_refptr<MediaStreamInterface> CreateMediaStream(const std::string& streamId);
-
     void RegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
-
     void UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
-
     MSO* GetObserver(const webrtc::MediaStreamInterface* stream);
 
     // PeerConnection
     PeerConnectionObject* CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
-
     void DeletePeerConnection(PeerConnectionObject* obj);
+
+    // StatsReport
+    std::mutex mutexStatsReport;
+    void AddStatsReport(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
+    const RTCStats** GetStatsList(const RTCStatsReport* report, size_t* length, uint32_t** types);
+    void DeleteStatsReport(const webrtc::RTCStatsReport* report);
 
     // DataChannel
     DataChannelInterface*
     CreateDataChannel(PeerConnectionObject* obj, const char* label, const DataChannelInit& options);
-
     void AddDataChannel(rtc::scoped_refptr<DataChannelInterface> channel, PeerConnectionObject& pc);
-
     DataChannelObject* GetDataChannelObject(const DataChannelInterface* channel);
-
     void DeleteDataChannel(DataChannelInterface* channel);
 
     // mutex;

@@ -1,11 +1,11 @@
 #pragma clang diagnostic ignored "-Wunreachable-code"
 #pragma clang diagnostic ignored "-Wunused-variable"
 
+#include "Context.h"
 #include <api/create_peerconnection_factory.h>
 #include <api/task_queue/default_task_queue_factory.h>
 #include <rtc_base/ssl_adapter.h>
 #include <rtc_base/strings/json.h>
-#include "Context.h"
 
 #include <iostream>
 
@@ -16,6 +16,60 @@ namespace webrtc
 {
 
 using namespace webrtc;
+
+bool Convert(const std::string& str, webrtc::PeerConnectionInterface::RTCConfiguration& config)
+{
+    config = PeerConnectionInterface::RTCConfiguration {};
+    Json::CharReaderBuilder builder;
+    const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+    Json::Value configJson;
+    Json::String err;
+    auto ok = reader->parse(str.c_str(), str.c_str() + static_cast<int>(str.length()), &configJson, &err);
+    if (!ok)
+    {
+        // json parse failed.
+        return false;
+    }
+
+    Json::Value iceServersJson = configJson["iceServers"];
+    if (!iceServersJson)
+        return false;
+    for (auto iceServerJson : iceServersJson)
+    {
+        webrtc::PeerConnectionInterface::IceServer iceServer;
+        for (auto url : iceServerJson["urls"])
+        {
+            iceServer.urls.push_back(url.asString());
+        }
+        if (!iceServerJson["username"].isNull())
+        {
+            iceServer.username = iceServerJson["username"].asString();
+        }
+        if (!iceServerJson["credential"].isNull())
+        {
+            iceServer.password = iceServerJson["credential"].asString();
+        }
+        config.servers.push_back(iceServer);
+    }
+    Json::Value iceTransportPolicy = configJson["iceTransportPolicy"];
+    if (iceTransportPolicy["hasValue"].asBool())
+    {
+        config.type = static_cast<PeerConnectionInterface::IceTransportsType>(iceTransportPolicy["value"].asInt());
+    }
+    Json::Value iceCandidatePoolSize = configJson["iceCandidatePoolSize"];
+    if (iceCandidatePoolSize["hasValue"].asBool())
+    {
+        config.ice_candidate_pool_size = iceCandidatePoolSize["value"].asInt();
+    }
+    Json::Value bundlePolicy = configJson["bundlePolicy"];
+    if (bundlePolicy["hasValue"].asBool())
+    {
+        config.bundle_policy = static_cast<PeerConnectionInterface::BundlePolicy>(bundlePolicy["value"].asInt());
+    }
+    config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
+    config.enable_implicit_rollback = true;
+    return true;
+}
 
 Context::Context()
     : m_workerThread(rtc::Thread::CreateWithSocketServer())
@@ -84,10 +138,7 @@ void Context::UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream
     m_mapMediaStreamObserver.erase(stream);
 }
 
-MSO* Context::GetObserver(const webrtc::MediaStreamInterface* stream)
-{
-    return m_mapMediaStreamObserver[stream].get();
-}
+MSO* Context::GetObserver(const webrtc::MediaStreamInterface* stream) { return m_mapMediaStreamObserver[stream].get(); }
 
 PeerConnectionObject* Context::CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration& config)
 {
@@ -106,6 +157,63 @@ PeerConnectionObject* Context::CreatePeerConnection(const webrtc::PeerConnection
 }
 
 void Context::DeletePeerConnection(PeerConnectionObject* obj) { m_mapClients.erase(obj); }
+
+void Context::AddStatsReport(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report)
+{
+    std::lock_guard<std::mutex> lock(mutexStatsReport);
+    m_listStatsReport.push_back(report);
+}
+
+const RTCStats** Context::GetStatsList(const RTCStatsReport* report, size_t* length, uint32_t** types)
+{
+    std::lock_guard<std::mutex> lock(mutexStatsReport);
+
+    auto result = std::find_if(
+        m_listStatsReport.begin(),
+        m_listStatsReport.end(),
+        [report](rtc::scoped_refptr<const webrtc::RTCStatsReport> it) { return it.get() == report; });
+
+    if (result == m_listStatsReport.end())
+    {
+        RTC_LOG(LS_INFO) << "Calling GetStatsList is failed. The reference of RTCStatsReport is not found.";
+        return nullptr;
+    }
+
+    const size_t size = report->size();
+    *length = size;
+    *types = static_cast<uint32_t*>(CoTaskMemAlloc(sizeof(uint32_t) * size));
+    void* buf = CoTaskMemAlloc(sizeof(RTCStats*) * size);
+    const RTCStats** ret = static_cast<const RTCStats**>(buf);
+    if (size == 0)
+    {
+        return ret;
+    }
+    int i = 0;
+    for (const auto& stats : *report)
+    {
+        ret[i] = &stats;
+        (*types)[i] = statsTypes.at(stats.type());
+        i++;
+    }
+    return ret;
+}
+
+void Context::DeleteStatsReport(const webrtc::RTCStatsReport* report)
+{
+    std::lock_guard<std::mutex> lock(mutexStatsReport);
+
+    auto result = std::find_if(
+        m_listStatsReport.begin(),
+        m_listStatsReport.end(),
+        [report](rtc::scoped_refptr<const webrtc::RTCStatsReport> it) { return it.get() == report; });
+
+    if (result == m_listStatsReport.end())
+    {
+        RTC_LOG(LS_INFO) << "Calling DeleteStatsReport is failed. The reference of RTCStatsReport is not found.";
+        return;
+    }
+    m_listStatsReport.erase(result);
+}
 
 uint32_t Context::s_rendererId = 0;
 uint32_t Context::GenerateRendererId() { return s_rendererId++; }
