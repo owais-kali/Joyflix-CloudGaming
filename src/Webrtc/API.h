@@ -3,8 +3,18 @@
 
 namespace webrtc
 {
+class WebRTCPlugin;
+class Context;
+class PeerConnectionObject;
+
 class API
 {
+private:
+    API* api;
+    WebRTCPlugin* plugin;
+    Context* ctx;
+    PeerConnectionObject* pco;
+
 public:
     enum class RTCSdpType
     {

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "PeerConnectionObject.h"
+#include "MSO.h"
 
-namespace webrtc
-{
+namespace webrtc{
 
 enum class RTCSdpType;
+
+class SSDO;
 
 class Context
 {
@@ -45,7 +47,7 @@ public:
 
     void UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
 
-    MediaStreamObserver* GetObserver(const webrtc::MediaStreamInterface* stream);
+    MSO* GetObserver(const webrtc::MediaStreamInterface* stream);
 
     // PeerConnection
     PeerConnectionObject* CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
@@ -72,7 +74,7 @@ private:
     rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> m_peerConnectionFactory;
     std::vector<rtc::scoped_refptr<const webrtc::RTCStatsReport>> m_listStatsReport;
     std::map<const PeerConnectionObject*, std::unique_ptr<PeerConnectionObject>> m_mapClients;
-    std::map<const webrtc::MediaStreamInterface*, std::unique_ptr<MediaStreamObserver>> m_mapMediaStreamObserver;
+    std::map<const webrtc::MediaStreamInterface*, std::unique_ptr<MSO>> m_mapMediaStreamObserver;
     std::map<const webrtc::PeerConnectionInterface*, rtc::scoped_refptr<SetSessionDescriptionObserver>>
         m_mapSetSessionDescriptionObserver;
     std::map<const DataChannelInterface*, std::unique_ptr<DataChannelObject>> m_mapDataChannels;

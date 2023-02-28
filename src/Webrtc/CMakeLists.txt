@@ -27,6 +27,10 @@ target_sources(WebRTC
         CSDO.cpp
         DataChannelObject.cpp
         DataChannelObject.h
+        SetLocalDescriptionObserver.cpp
+        SetLocalDescriptionObserver.h
+        MSO.cpp
+        MSO.h
         WebRTCPlugin.cpp
         WebRTCPlugin.h
         API.cpp

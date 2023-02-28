@@ -5,11 +5,6 @@
 
 using namespace webrtc;
 
-API* api;
-WebRTCPlugin* plugin;
-Context* ctx;
-PeerConnectionObject* pco;
-
 API::API(DelegateOnGotDescription onGotDescriptionCallback, DelegateOnGotICECandidate onGotICECandidateCallback)
     : GotDescriptionCallback(onGotDescriptionCallback)
     , GotICECandidateCallback(onGotICECandidateCallback)
@@ -38,7 +33,7 @@ void API::ContextDestroy()
     DebugLog("Context Destroyed!");
 }
 
-void GotSDPCallback(PeerConnectionObject* pco, RTCSdpType type, const char* sdp)
+void GotSDPCallback(API* api, PeerConnectionObject* pco, RTCSdpType type, const char* sdp)
 {
     switch (type)
     {
@@ -70,12 +65,13 @@ void GotSDPCallback(PeerConnectionObject* pco, RTCSdpType type, const char* sdp)
     }
 }
 
-void OnIceCandidate(PeerConnectionObject* pco, const char* candidate, const char* sdpMid, const int sdpMlineIndex)
+void OnIceCandidate(
+    API* api, PeerConnectionObject* pco, const char* candidate, const char* sdpMid, const int sdpMlineIndex)
 {
     api->GotICECandidateCallback((char*)candidate, (char*)sdpMid, sdpMlineIndex);
 }
 
-void CreateOffer(PeerConnectionObject* pco)
+void CreateOffer(WebRTCPlugin* plugin, Context* ctx ,PeerConnectionObject* pco)
 {
     const RTCOfferAnswerOptions options { false, true };
     plugin->PeerConnectionCreateOffer(ctx, pco, &options);

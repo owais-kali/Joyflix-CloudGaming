@@ -33,52 +33,27 @@ PeerConnectionObject::~PeerConnectionObject()
 
 void PeerConnectionObject::OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel)
 {
-    context.AddDataChannel(channel, *this);
-    //        if (onDataChannel != nullptr) {
-    //            onDataChannel(this, channel);
-    //        }
+    NOT_IMPLEMENTED("OnDataChannel");
 }
 
 void PeerConnectionObject::OnIceCandidate(const webrtc::IceCandidateInterface* candidate)
 {
-    std::string out;
-    DebugLog("PeerConnectionObject::OnIceCandidate");
-    if (!candidate->ToString(&out))
-    {
-        //            DebugError("Can't make string form of sdp.");
-    }
-    if (onIceCandidate != nullptr)
-    {
-        onIceCandidate(this, out.c_str(), candidate->sdp_mid().c_str(), candidate->sdp_mline_index());
-    }
+    NOT_IMPLEMENTED("OnIceCandidate");
 }
 
 void PeerConnectionObject::OnRenegotiationNeeded()
 {
-    //        if (onRenegotiationNeeded != nullptr)
-    //        {
-    //            onRenegotiationNeeded(this);
-    //        }
+    NOT_IMPLEMENTED("OnRenegotiationNeeded");
 }
 
 void PeerConnectionObject::OnTrack(rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver)
 {
-    //        context.AddRefPtr(transceiver);
-    //        context.AddRefPtr(transceiver->receiver());
-    //        context.AddRefPtr(transceiver->receiver()->track());
-
-    //        if (onTrack != nullptr)
-    //        {
-    //            onTrack(this, transceiver.get());
-    //        }
+    NOT_IMPLEMENTED("OnTrack");
 }
 
 void PeerConnectionObject::OnRemoveTrack(rtc::scoped_refptr<RtpReceiverInterface> receiver)
 {
-    //        if (onRemoveTrack != nullptr)
-    //        {
-    //            onRemoveTrack(this, receiver.get());
-    //        }
+    NOT_IMPLEMENTED("OnRemoveTrack");
 }
 
 // Called any time the IceConnectionState changes.

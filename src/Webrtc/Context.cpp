@@ -1,13 +1,16 @@
 #pragma clang diagnostic ignored "-Wunreachable-code"
 #pragma clang diagnostic ignored "-Wunused-variable"
 
+#include <api/create_peerconnection_factory.h>
+#include <api/task_queue/default_task_queue_factory.h>
+#include <rtc_base/ssl_adapter.h>
+#include <rtc_base/strings/json.h>
 #include "Context.h"
 
 #include <iostream>
 
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
-#include "api/task_queue/default_task_queue_factory.h"
 
 namespace webrtc
 {
@@ -81,7 +84,7 @@ void Context::UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream
     m_mapMediaStreamObserver.erase(stream);
 }
 
-MediaStreamObserver* Context::GetObserver(const webrtc::MediaStreamInterface* stream)
+MSO* Context::GetObserver(const webrtc::MediaStreamInterface* stream)
 {
     return m_mapMediaStreamObserver[stream].get();
 }

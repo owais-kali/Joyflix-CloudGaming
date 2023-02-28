@@ -7,19 +7,21 @@
 namespace webrtc
 {
 
-#if defined(__linux__)
-#define SPACE_INTERFACE_EXPORT __attribute__((visibility("default")))
-#endif
-
-namespace webrtc = ::webrtc;
-
+class API;
 class Context;
-
 class PeerConnectionObject;
-
 class CSDO;
+class UnityVideoRenderer;
+class AudioTrackSinkAdapter;
+enum class RTCSdpType;
+enum class RTCPeerConnectionEventType;
+struct MediaStreamEvent;
 
-class PeerConnectionInterface;
+using DelegateDebugLog = void (*)(const char*);
+using DelegateSetResolution = void (*)(int32_t*, int32_t*);
+using DelegateMediaStreamOnAddTrack = void (*)(MediaStreamInterface*, MediaStreamTrackInterface*);
+using DelegateMediaStreamOnRemoveTrack = void (*)(MediaStreamInterface*, MediaStreamTrackInterface*);
+using DelegateVideoFrameResize = void (*)(UnityVideoRenderer* renderer, int width, int height);
 
 enum class RTCSdpType
 {
@@ -167,11 +169,11 @@ struct Candidate
 };
 
 // Callback Delegates
-using DelegateCreateSDSuccess = void (*)(PeerConnectionObject*, RTCSdpType, const char*);
+using DelegateCreateSDSuccess = void (*)(API*, PeerConnectionObject*, RTCSdpType, const char*);
 
 using DelegateCreateSDFailure = void (*)(PeerConnectionObject*, webrtc::RTCErrorType, const char*);
 using DelegateLocalSdpReady = void (*)(PeerConnectionObject*, const char*, const char*);
-using DelegateIceCandidate = void (*)(PeerConnectionObject*, const char*, const char*, const int);
+using DelegateIceCandidate = void (*)(API*, PeerConnectionObject*, const char*, const char*, const int);
 using DelegateOnIceConnectionChange =
     void (*)(PeerConnectionObject*, webrtc::PeerConnectionInterface::IceConnectionState);
 using DelegateOnIceGatheringChange =
@@ -191,6 +193,12 @@ private:
 
 public:
     PeerConnectionObject* ContextCreatePeerConnection(Context* context);
+    PeerConnectionObject* ContextCreatePeerConnectionWithConfig(Context* context, const char* conf);
+    void ContextDeletePeerConnection(Context* context, PeerConnectionObject* obj);
+    void PeerConnectionClose(PeerConnectionObject* obj);
+    void PeerConnectionRestartIce(PeerConnectionObject* obj);
+    RTCErrorType PeerConnectionAddTrack(
+        PeerConnectionObject* obj, MediaStreamTrackInterface* track, const char* streamId, RtpSenderInterface** sender);
 
     void PeerConnectionRegisterCallbackCreateSD(
         PeerConnectionObject* obj, DelegateCreateSDSuccess onSuccess, DelegateCreateSDFailure onFailure);

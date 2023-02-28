@@ -85,6 +85,27 @@ namespace webrtc {
         }
     }
 
+    PeerConnectionObject *WebRTCPlugin::ContextCreatePeerConnectionWithConfig(Context *context, const char *conf) {
+        return nullptr;
+    }
+
+    void WebRTCPlugin::ContextDeletePeerConnection(Context *context, PeerConnectionObject *obj) {
+
+    }
+
+    void WebRTCPlugin::PeerConnectionClose(PeerConnectionObject *obj) {
+
+    }
+
+    void WebRTCPlugin::PeerConnectionRestartIce(PeerConnectionObject *obj) {
+
+    }
+
+    RTCErrorType WebRTCPlugin::PeerConnectionAddTrack(PeerConnectionObject *obj, MediaStreamTrackInterface *track,
+                                                      const char *streamId, RtpSenderInterface **sender) {
+        return RTCErrorType::INVALID_PARAMETER;
+    }
+
     char *ConvertString(const std::string str) {
         const size_t size = str.size();
         char *ret = static_cast<char *>(CoTaskMemAlloc(size + sizeof(char)));
