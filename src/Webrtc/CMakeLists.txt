@@ -25,6 +25,8 @@ target_sources(WebRTC
         Context.h
         CSDO.h
         CSDO.cpp
+        DataChannelObject.cpp
+        DataChannelObject.h
         WebRTCPlugin.cpp
         WebRTCPlugin.h
         API.cpp
@@ -42,4 +44,4 @@ target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/third_party/jsonc
 target_link_libraries(WebRTC
         PRIVATE
         ${WEBRTC_SRC}/out/Debug/obj/libwebrtc.a
-)
+        )

@@ -2,60 +2,85 @@
 
 #include "PeerConnectionObject.h"
 
-namespace webrtc {
+namespace webrtc
+{
 
-    enum class RTCSdpType;
+enum class RTCSdpType;
 
-    class Context {
-    public:
-        Context();
+class Context
+{
+public:
+    Context();
 
-        ~Context();
+    ~Context();
 
-        // PeerConnection
-        PeerConnectionObject *CreatePeerConnection(
-                const webrtc::PeerConnectionInterface::RTCConfiguration &config);
+    bool ExistsRefPtr(const rtc::RefCountInterface* ptr) const { return m_mapRefPtr.find(ptr) != m_mapRefPtr.end(); }
 
-        void AddObserver(
-                const webrtc::PeerConnectionInterface *connection,
-                const rtc::scoped_refptr<SetSessionDescriptionObserver> &observer);
+    template<typename T>
+    void AddRefPtr(rtc::scoped_refptr<T> refptr)
+    {
+        m_mapRefPtr.emplace(refptr.get(), refptr);
+    }
 
-        SetSessionDescriptionObserver *GetObserver(
-                webrtc::PeerConnectionInterface *connection);
+    void AddRefPtr(rtc::RefCountInterface* ptr) { m_mapRefPtr.emplace(ptr, ptr); }
 
-        void AddTracks();
+    template<typename T>
+    void RemoveRefPtr(rtc::scoped_refptr<T>& refptr)
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        m_mapRefPtr.erase(refptr.get());
+    }
 
-        // mutex;
-        std::mutex mutex;
+    template<typename T>
+    void RemoveRefPtr(T* ptr)
+    {
+        std::lock_guard<std::mutex> lock(mutex);
+        m_mapRefPtr.erase(ptr);
+    }
 
-    private:
-        std::unique_ptr<rtc::Thread> m_workerThread;
-        std::unique_ptr<rtc::Thread> m_signalingThread;
-        std::unique_ptr<TaskQueueFactory> m_taskQueueFactory;
-        rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>
-                m_peerConnectionFactory;
-        // rtc::scoped_refptr<DummyAudioDevice> m_audioDevice;
-        std::vector<rtc::scoped_refptr<const webrtc::RTCStatsReport>>
-                m_listStatsReport;
-        std::map<const PeerConnectionObject*, std::unique_ptr<PeerConnectionObject>> m_mapClients;
-        std::map<const webrtc::MediaStreamInterface *,
-                std::unique_ptr<MediaStreamObserver>>
-                m_mapMediaStreamObserver;
-        std::map<const webrtc::PeerConnectionInterface *,
-                rtc::scoped_refptr<SetSessionDescriptionObserver>>
-                m_mapSetSessionDescriptionObserver;
-        // std::map<const DataChannelInterface*, std::unique_ptr<DataChannelObject>>
-        // m_mapDataChannels; std::map<const uint32_t,
-        // std::shared_ptr<UnityVideoRenderer>> m_mapVideoRenderer; std::map<const
-        // AudioTrackSinkAdapter*, std::unique_ptr<AudioTrackSinkAdapter>>
-        // m_mapAudioTrackAndSink;
-        std::map<const rtc::RefCountInterface *,
-                rtc::scoped_refptr<rtc::RefCountInterface>>
-                m_mapRefPtr;
+    // MediaStream
+    rtc::scoped_refptr<MediaStreamInterface> CreateMediaStream(const std::string& streamId);
 
-        static uint32_t s_rendererId;
+    void RegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
 
-        static uint32_t GenerateRendererId();
-    };
+    void UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
 
-}  // namespace webrtc
+    MediaStreamObserver* GetObserver(const webrtc::MediaStreamInterface* stream);
+
+    // PeerConnection
+    PeerConnectionObject* CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
+
+    void DeletePeerConnection(PeerConnectionObject* obj);
+
+    // DataChannel
+    DataChannelInterface*
+    CreateDataChannel(PeerConnectionObject* obj, const char* label, const DataChannelInit& options);
+
+    void AddDataChannel(rtc::scoped_refptr<DataChannelInterface> channel, PeerConnectionObject& pc);
+
+    DataChannelObject* GetDataChannelObject(const DataChannelInterface* channel);
+
+    void DeleteDataChannel(DataChannelInterface* channel);
+
+    // mutex;
+    std::mutex mutex;
+
+private:
+    std::unique_ptr<rtc::Thread> m_workerThread;
+    std::unique_ptr<rtc::Thread> m_signalingThread;
+    std::unique_ptr<TaskQueueFactory> m_taskQueueFactory;
+    rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> m_peerConnectionFactory;
+    std::vector<rtc::scoped_refptr<const webrtc::RTCStatsReport>> m_listStatsReport;
+    std::map<const PeerConnectionObject*, std::unique_ptr<PeerConnectionObject>> m_mapClients;
+    std::map<const webrtc::MediaStreamInterface*, std::unique_ptr<MediaStreamObserver>> m_mapMediaStreamObserver;
+    std::map<const webrtc::PeerConnectionInterface*, rtc::scoped_refptr<SetSessionDescriptionObserver>>
+        m_mapSetSessionDescriptionObserver;
+    std::map<const DataChannelInterface*, std::unique_ptr<DataChannelObject>> m_mapDataChannels;
+    std::map<const rtc::RefCountInterface*, rtc::scoped_refptr<rtc::RefCountInterface>> m_mapRefPtr;
+
+    static uint32_t s_rendererId;
+
+    static uint32_t GenerateRendererId();
+};
+
+} // namespace webrtc

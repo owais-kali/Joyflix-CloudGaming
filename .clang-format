@@ -1,0 +1,10 @@
+BasedOnStyle: WebKit
+AlignAfterOpenBracket: AlwaysBreak
+AlwaysBreakTemplateDeclarations: true
+NamespaceIndentation: Inner
+BreakBeforeBraces: Allman
+BreakBeforeBinaryOperators: None
+SpaceAfterTemplateKeyword: false
+ColumnLimit: 120
+BinPackArguments: false
+BinPackParameters: false
