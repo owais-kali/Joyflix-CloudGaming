@@ -1,11 +1,11 @@
-# Joyflix-CloudGaming
+# Joyflix-CloudGaming: Open-source Cloud Gaming Service
 
-Open-source Cloud Gaming Service
+<b>:warning: This project is under development and nowhere near ready for use.</b>
 
-![Design](https://github.com/joyflix99/Joyflix-CloudGaming/blob/cuda_app/Joyflix%20Engine.drawio.png)
+![Design](https://raw.githubusercontent.com/joyflix99/Joyflix-CloudGaming/a16237d2730549d3112416a3057476715f069927/Joyflix%20Engine.drawio.png)
 
 ## Introduction
-Joyflix provides a cloud gaming platform to run Windows OS games on linux using [Wine](https://www.winehq.org/).
+Joyflix provides a cloud gaming platform to run Windows OS games on linux server completely headless (ie: no X11 server is needed) using [Wine](https://www.winehq.org/).
 
 In cloud gaming, games are run on remote servers and media are streamed to the player optimally to ensure
 the most comfortable user interaction. It opens the ability to play any  games on web-browser directly, which are
@@ -16,7 +16,7 @@ fully compatible with multi-platform like Desktop, Android, IOS.
 - This is very inefficient and also hard to containerize using docker as either the X11 server needs to be run on host computer to get hardware acceleration and you can only run one game per x11 server;
 - Or you can run a virtual framebuffer inside a docker container using xvfb but this is very slow cause it uses CPU, RAM instead of GPU. Example of such a software is [
   selkies-gstreamer](https://github.com/selkies-project/selkies-gstreamer)
-- So we have decided to completely remove any kind of windowing system and run it complete headless. This is challenging cause Wines original source code does not have a headless mode. So we have to make our own custom version of wine that can be run headless. 
+- So we have decided to completely remove any kind of windowing system and run it completely headless. This is challenging cause Wines original source code does not have a headless mode. So we have to make our own custom version of wine that can be run headless. 
 - You can check out our headless wine source code from [here](https://github.com/joyflix99/wine-tkg-headless) 
 
 ## Encoding
@@ -41,7 +41,7 @@ fully compatible with multi-platform like Desktop, Android, IOS.
 * [x] Create VulkanApp
 * [x] Create CudaApp
 * [ ] Create Nvenc Encoder
-* [ ] Add WebRTC(C++) and Signalling server
+* [x] Add WebRTC(C++) and Signalling server
 * [x] Create simple webapp using nodejs
 * [x] Exchange offer & answer and Connect WebRTC(C++) to webapp 
 * [ ] Stream Encoded video to web browser using webrtc 
