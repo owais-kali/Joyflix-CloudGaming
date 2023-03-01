@@ -11,6 +11,71 @@
 
 namespace webrtc {
 
+
+    MediaStreamInterface *WebRTCPlugin::ContextCreateMediaStream(Context *context, const char *streamId) {
+        rtc::scoped_refptr<MediaStreamInterface> stream = context->CreateMediaStream(streamId);
+        context->AddRefPtr(stream);
+        return stream.get();
+    }
+
+    void WebRTCPlugin::ContextRegisterMediaStreamObserver(Context *context, MediaStreamInterface *stream) {
+
+    }
+
+    void WebRTCPlugin::ContextUnRegisterMediaStreamObserver(Context *context, MediaStreamInterface *stream) {
+
+    }
+
+    MediaStreamTrackInterface *WebRTCPlugin::ContextCreateVideoTrack(Context *context, const char *label,
+                                                                     webrtc::VideoTrackSourceInterface *source) {
+        return nullptr;
+    }
+
+    void WebRTCPlugin::ContextStopMediaStreamTrack(Context *context, ::webrtc::MediaStreamTrackInterface *track) {
+
+    }
+
+    webrtc::VideoTrackSourceInterface *WebRTCPlugin::ContextCreateVideoTrackSource(Context *context) {
+        return nullptr;
+    }
+
+    webrtc::AudioSourceInterface *WebRTCPlugin::ContextCreateAudioTrackSource(Context *context) {
+        return nullptr;
+    }
+
+    webrtc::MediaStreamTrackInterface *
+    WebRTCPlugin::ContextCreateAudioTrack(Context *context, const char *label, webrtc::AudioSourceInterface *source) {
+        return nullptr;
+    }
+
+    void WebRTCPlugin::ContextAddRefPtr(Context *context, rtc::RefCountInterface *ptr) {
+
+    }
+
+    void WebRTCPlugin::ContextDeleteRefPtr(Context *context, rtc::RefCountInterface *ptr) {
+
+    }
+
+    bool WebRTCPlugin::MediaStreamAddTrack(MediaStreamInterface *stream, MediaStreamTrackInterface *track) {
+        return false;
+    }
+
+    bool WebRTCPlugin::MediaStreamRemoveTrack(MediaStreamInterface *stream, MediaStreamTrackInterface *track) {
+        return false;
+    }
+
+    char *WebRTCPlugin::MediaStreamGetID(MediaStreamInterface *stream) {
+        return nullptr;
+    }
+
+    Context *WebRTCPlugin::ContextCreate(int uid) {
+        return nullptr;
+    }
+
+    void WebRTCPlugin::ContextDestroy(int uid) {
+
+    }
+
     PeerConnectionObject *WebRTCPlugin::ContextCreatePeerConnection(
             Context *context) {
         PeerConnectionInterface::RTCConfiguration config = {};
@@ -20,13 +85,6 @@ namespace webrtc {
         server.uri = GetPeerConnectionString();
         config.servers.push_back(server);
         return context->CreatePeerConnection(config);
-    }
-
-    void WebRTCPlugin::PeerConnectionRegisterCallbackCreateSD(
-            PeerConnectionObject *obj,
-            DelegateCreateSDSuccess onSuccess,
-            DelegateCreateSDFailure onFailure) {
-        obj->RegisterCallbackCreateSD(onSuccess, onFailure);
     }
 
     void WebRTCPlugin::PeerConnectionRegisterOnIceCandidate(
@@ -119,4 +177,5 @@ namespace webrtc {
         ret[size] = '\0';
         return ret;
     }
+
 }  // namespace webrtc

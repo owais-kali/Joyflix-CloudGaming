@@ -168,6 +168,133 @@ struct Candidate
     }
 };
 
+template<typename T>
+struct MarshallArray
+{
+    size_t length;
+    T* values;
+
+    T& operator[](size_t i) const { return values[i]; }
+
+    template<typename U>
+    MarshallArray& operator=(const std::vector<U>& src)
+    {
+        length = static_cast<int32_t>(src.size());
+        values = static_cast<T*>(CoTaskMemAlloc(sizeof(T) * src.size()));
+
+        for (size_t i = 0; i < src.size(); i++)
+        {
+            values[i] = src[i];
+        }
+        return *this;
+    }
+};
+
+template<typename T>
+struct Optional
+{
+    bool hasValue;
+    T value;
+
+    template<typename U>
+    Optional& operator=(const absl::optional<U>& src)
+    {
+        hasValue = src.has_value();
+        if (hasValue)
+        {
+            value = static_cast<T>(src.value());
+        }
+        else
+        {
+            value = T();
+        }
+        return *this;
+    }
+
+#if defined(__clang__) || defined(__GNUC__)
+    __attribute__((optnone))
+#endif
+    explicit
+    operator const absl::optional<T>() const
+    {
+        absl::optional<T> dst = absl::nullopt;
+        if (hasValue)
+            dst = value;
+        return dst;
+    }
+
+    const T& value_or(const T& v) const { return hasValue ? value : v; }
+};
+
+template<typename T>
+absl::optional<T> ConvertOptional(const Optional<T>& value)
+{
+    absl::optional<T> dst = absl::nullopt;
+    if (value.hasValue)
+    {
+        dst = value.value;
+    }
+    return dst;
+}
+
+struct RTCRtpEncodingParameters
+{
+    bool active;
+    Optional<uint64_t> maxBitrate;
+    Optional<uint64_t> minBitrate;
+    Optional<uint32_t> maxFramerate;
+    Optional<double> scaleResolutionDownBy;
+    char* rid;
+
+    RTCRtpEncodingParameters& operator=(const RtpEncodingParameters& obj)
+    {
+        active = obj.active;
+        maxBitrate = obj.max_bitrate_bps;
+        minBitrate = obj.min_bitrate_bps;
+        maxFramerate = obj.max_framerate;
+        scaleResolutionDownBy = obj.scale_resolution_down_by;
+        rid = ConvertString(obj.rid);
+        return *this;
+    }
+
+    operator RtpEncodingParameters() const
+    {
+        RtpEncodingParameters dst = {};
+        dst.active = active;
+        dst.max_bitrate_bps = static_cast<absl::optional<int>>(ConvertOptional(maxBitrate));
+        dst.min_bitrate_bps = static_cast<absl::optional<int>>(ConvertOptional(minBitrate));
+        dst.max_framerate = static_cast<absl::optional<double>>(ConvertOptional(maxFramerate));
+        dst.scale_resolution_down_by = ConvertOptional(scaleResolutionDownBy);
+        if (rid != nullptr)
+            dst.rid = std::string(rid);
+        return dst;
+    }
+};
+
+struct RTCRtpTransceiverInit
+{
+    RtpTransceiverDirection direction;
+    MarshallArray<RTCRtpEncodingParameters> sendEncodings;
+    MarshallArray<MediaStreamInterface*> streams;
+
+    operator RtpTransceiverInit() const
+    {
+        RtpTransceiverInit dst = {};
+        dst.direction = direction;
+        dst.send_encodings.resize(sendEncodings.length);
+        for (size_t i = 0; i < dst.send_encodings.size(); i++)
+        {
+            dst.send_encodings[i] = sendEncodings[i];
+        }
+        dst.stream_ids.resize(streams.length);
+        for (size_t i = 0; i < dst.stream_ids.size(); i++)
+        {
+            dst.stream_ids[i] = streams[i]->id();
+        }
+        return dst;
+    }
+};
+
 // Callback Delegates
 using DelegateCreateSDSuccess = void (*)(API*, PeerConnectionObject*, RTCSdpType, const char*);
 
@@ -192,6 +319,29 @@ private:
     const std::string stun_server_url = "stun:stun.l.google.com:19302";
 
 public:
+    MediaStreamInterface* ContextCreateMediaStream(Context* context, const char* streamId);
+    void ContextRegisterMediaStreamObserver(Context* context, MediaStreamInterface* stream);
+    void ContextUnRegisterMediaStreamObserver(Context* context, MediaStreamInterface* stream);
+    MediaStreamTrackInterface*
+    ContextCreateVideoTrack(Context* context, const char* label, webrtc::VideoTrackSourceInterface* source);
+    void ContextStopMediaStreamTrack(Context* context, ::webrtc::MediaStreamTrackInterface* track);
+
+    webrtc::VideoTrackSourceInterface* ContextCreateVideoTrackSource(Context* context);
+
+    webrtc::AudioSourceInterface* ContextCreateAudioTrackSource(Context* context);
+    webrtc::MediaStreamTrackInterface*
+    ContextCreateAudioTrack(Context* context, const char* label, webrtc::AudioSourceInterface* source);
+
+    void ContextAddRefPtr(Context* context, rtc::RefCountInterface* ptr);
+    void ContextDeleteRefPtr(Context* context, rtc::RefCountInterface* ptr);
+
+    bool MediaStreamAddTrack(MediaStreamInterface* stream, MediaStreamTrackInterface* track);
+    bool MediaStreamRemoveTrack(MediaStreamInterface* stream, MediaStreamTrackInterface* track);
+    char* MediaStreamGetID(MediaStreamInterface* stream);
+
+    Context* ContextCreate(int uid);
+    void ContextDestroy(int uid);
+
     PeerConnectionObject* ContextCreatePeerConnection(Context* context);
     PeerConnectionObject* ContextCreatePeerConnectionWithConfig(Context* context, const char* conf);
     void ContextDeletePeerConnection(Context* context, PeerConnectionObject* obj);
@@ -200,8 +350,13 @@ public:
     RTCErrorType PeerConnectionAddTrack(
         PeerConnectionObject* obj, MediaStreamTrackInterface* track, const char* streamId, RtpSenderInterface** sender);
 
-    void PeerConnectionRegisterCallbackCreateSD(
-        PeerConnectionObject* obj, DelegateCreateSDSuccess onSuccess, DelegateCreateSDFailure onFailure);
+    RtpTransceiverInterface* PeerConnectionAddTransceiver(PeerConnectionObject* obj, MediaStreamTrackInterface* track);
+
+    RtpTransceiverInterface* PeerConnectionAddTransceiverWithInit(
+        PeerConnectionObject* obj, MediaStreamTrackInterface* track, const RTCRtpTransceiverInit* init);
+
+    RtpTransceiverInterface*
+    PeerConnectionAddTransceiverWithType(PeerConnectionObject* obj, cricket::MediaType type);
 
     void PeerConnectionRegisterOnIceCandidate(PeerConnectionObject* obj, DelegateIceCandidate callback);
 

@@ -80,7 +80,7 @@ void CreateOffer(WebRTCPlugin* plugin, Context* ctx ,PeerConnectionObject* pco)
 void API::StartWebRTCServer()
 {
     pco = plugin->ContextCreatePeerConnection(ctx);
-    plugin->PeerConnectionRegisterCallbackCreateSD(pco, GotSDPCallback, nullptr);
+
     plugin->PeerConnectionRegisterOnIceCandidate(pco, OnIceCandidate);
 }
 
