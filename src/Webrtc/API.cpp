@@ -90,10 +90,12 @@ void API::SetLocalDescription(API::RTCSdpType type, char* sdp)
     {
     case RTCSdpType::Offer:
         RTCSessionDescription desc = { webrtc::RTCSdpType::Offer, sdp };
-        std::string err;
-        if (plugin->PeerConnectionSetLocalDescription(ctx, pco, &desc, err) != RTCErrorType::NONE)
+        char** error;
+        RTCErrorType errorType;
+        plugin->PeerConnectionSetLocalDescription(pco, &desc, &errorType , error);
+        if (errorType != RTCErrorType::NONE)
         {
-            DebugLog("%s", err.c_str());
+            DebugLog("%s", error);
         }
         break;
     }
@@ -106,10 +108,6 @@ void API::SetRemoteDescription(API::RTCSdpType type, char* sdp)
     case RTCSdpType::Offer:
         RTCSessionDescription desc = { webrtc::RTCSdpType::Offer, sdp };
         std::string err;
-        if (plugin->PeerConnectionSetRemoteDescription(ctx, pco, &desc, err) != RTCErrorType::NONE)
-        {
-            DebugLog("%s", err.c_str());
-        }
         break;
     }
 }

@@ -6,10 +6,6 @@
 
 namespace webrtc
 {
-class CSDO;
-using DelegateCreateSessionDesc =
-    void (*)(PeerConnectionObject*, CSDO*, RTCSdpType, const char*, RTCErrorType, const char*);
-
 class CSDO : public ::webrtc::CreateSessionDescriptionObserver
 {
 public:

@@ -13,6 +13,10 @@ class PeerConnectionObject;
 class CSDO;
 class UnityVideoRenderer;
 class AudioTrackSinkAdapter;
+class PeerConnectionStatsCollectorCallback;
+class SetLocalDescriptionObserver;
+class SetRemoteDescriptionObserver;
+
 enum class RTCSdpType;
 enum class RTCPeerConnectionEventType;
 struct MediaStreamEvent;
@@ -22,6 +26,12 @@ using DelegateSetResolution = void (*)(int32_t*, int32_t*);
 using DelegateMediaStreamOnAddTrack = void (*)(MediaStreamInterface*, MediaStreamTrackInterface*);
 using DelegateMediaStreamOnRemoveTrack = void (*)(MediaStreamInterface*, MediaStreamTrackInterface*);
 using DelegateVideoFrameResize = void (*)(UnityVideoRenderer* renderer, int width, int height);
+
+using DelegateCollectStats =
+    void (*)(PeerConnectionObject*, PeerConnectionStatsCollectorCallback*, const RTCStatsReport*);
+
+using DelegateCreateSessionDesc = void (*)(
+    PeerConnectionObject*, CreateSessionDescriptionObserver*, RTCSdpType, const char*, RTCErrorType, const char*);
 
 enum class RTCSdpType
 {
@@ -295,6 +305,16 @@ struct RTCRtpTransceiverInit
     }
 };
 
+struct RTCDataChannelInit
+{
+    Optional<bool> ordered;
+    Optional<int32_t> maxRetransmitTime;
+    Optional<int32_t> maxRetransmits;
+    char* protocol;
+    Optional<bool> negotiated;
+    Optional<int32_t> id;
+};
+
 // Callback Delegates
 using DelegateCreateSDSuccess = void (*)(API*, PeerConnectionObject*, RTCSdpType, const char*);
 
@@ -355,20 +375,89 @@ public:
     RtpTransceiverInterface* PeerConnectionAddTransceiverWithInit(
         PeerConnectionObject* obj, MediaStreamTrackInterface* track, const RTCRtpTransceiverInit* init);
 
-    RtpTransceiverInterface*
-    PeerConnectionAddTransceiverWithType(PeerConnectionObject* obj, cricket::MediaType type);
+    RtpTransceiverInterface* PeerConnectionAddTransceiverWithType(PeerConnectionObject* obj, cricket::MediaType type);
 
-    void PeerConnectionRegisterOnIceCandidate(PeerConnectionObject* obj, DelegateIceCandidate callback);
+    RtpTransceiverInterface* PeerConnectionAddTransceiverWithTypeAndInit(
+        PeerConnectionObject* obj, cricket::MediaType type, const RTCRtpTransceiverInit* init);
+
+    RTCErrorType PeerConnectionRemoveTrack(PeerConnectionObject* obj, RtpSenderInterface* sender);
+    RTCErrorType PeerConnectionSetConfiguration(PeerConnectionObject* obj, const char* conf);
+    char* PeerConnectionGetConfiguration(PeerConnectionObject* obj);
+    PeerConnectionStatsCollectorCallback* PeerConnectionGetStats(PeerConnectionObject* obj);
+
+    PeerConnectionStatsCollectorCallback*
+    PeerConnectionSenderGetStats(PeerConnectionObject* obj, RtpSenderInterface* sender);
+
+    PeerConnectionStatsCollectorCallback*
+    PeerConnectionReceiverGetStats(PeerConnectionObject* obj, RtpReceiverInterface* receiver);
+
+    const RTCStats**
+    ContextGetStatsList(Context* context, const RTCStatsReport* report, size_t* length, uint32_t** types);
+    void ContextDeleteStatsReport(Context* context, const RTCStatsReport* report);
+    const char* StatsGetJson(const RTCStats* stats);
+    int64_t StatsGetTimestamp(const RTCStats* stats);
+    const char* StatsGetId(const RTCStats* stats);
+    uint32_t StatsGetType(const RTCStats* stats);
+    const RTCStatsMemberInterface** StatsGetMembers(const RTCStats* stats, size_t* length);
+    bool StatsMemberIsDefined(const RTCStatsMemberInterface* member);
+    const char* StatsMemberGetName(const RTCStatsMemberInterface* member);
+    bool StatsMemberGetBool(const RTCStatsMemberInterface* member);
+    int32_t StatsMemberGetInt(const RTCStatsMemberInterface* member);
+    uint32_t StatsMemberGetUnsignedInt(const RTCStatsMemberInterface* member);
+    int64_t StatsMemberGetLong(const RTCStatsMemberInterface* member);
+    uint64_t StatsMemberGetUnsignedLong(const RTCStatsMemberInterface* member);
+    double StatsMemberGetDouble(const RTCStatsMemberInterface* member);
+    const char* StatsMemberGetString(const RTCStatsMemberInterface* member);
+    bool* StatsMemberGetBoolArray(const RTCStatsMemberInterface* member, size_t* length);
+    int32_t* StatsMemberGetIntArray(const RTCStatsMemberInterface* member, size_t* length);
+    uint32_t* StatsMemberGetUnsignedIntArray(const RTCStatsMemberInterface* member, size_t* length);
+    int64_t* StatsMemberGetLongArray(const RTCStatsMemberInterface* member, size_t* length);
+
+    uint64_t* StatsMemberGetUnsignedLongArray(const RTCStatsMemberInterface* member, size_t* length);
+    double* StatsMemberGetDoubleArray(const RTCStatsMemberInterface* member, size_t* length);
+    const char** StatsMemberGetStringArray(const RTCStatsMemberInterface* member, size_t* length);
+    const char**
+    StatsMemberGetMapStringUint64(const RTCStatsMemberInterface* member, uint64_t** values, size_t* length);
+    const char** StatsMemberGetMapStringDouble(const RTCStatsMemberInterface* member, double** values, size_t* length);
+
+    RTCStatsMemberInterface::Type StatsMemberGetType(const RTCStatsMemberInterface* member);
+
+    SetLocalDescriptionObserver* PeerConnectionSetLocalDescription(
+        PeerConnectionObject* obj, const RTCSessionDescription* desc, RTCErrorType* errorType, char* error[]);
+
+    SetLocalDescriptionObserver* PeerConnectionSetLocalDescriptionWithoutDescription(
+        PeerConnectionObject* obj, RTCErrorType* errorType, char* error[]);
+
+    SetRemoteDescriptionObserver* PeerConnectionSetRemoteDescription(
+        PeerConnectionObject* obj, const RTCSessionDescription* desc, RTCErrorType* errorType, char* error[]);
+
+    bool PeerConnectionGetLocalDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
+    bool PeerConnectionGetRemoteDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
+    bool PeerConnectionGetPendingLocalDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
+    bool PeerConnectionGetPendingRemoteDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
+    bool PeerConnectionGetCurrentLocalDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
+    bool PeerConnectionGetCurrentRemoteDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
+
+    RtpReceiverInterface** PeerConnectionGetReceivers(Context* context, PeerConnectionObject* obj, size_t* length);
+    RtpSenderInterface** PeerConnectionGetSenders(Context* context, PeerConnectionObject* obj, size_t* length);
+    RtpTransceiverInterface**
+    PeerConnectionGetTransceivers(Context* context, PeerConnectionObject* obj, size_t* length);
 
     CSDO* PeerConnectionCreateOffer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
-
     CSDO* PeerConnectionCreateAnswer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
 
-    webrtc::RTCErrorType PeerConnectionSetLocalDescription(
-        Context* context, PeerConnectionObject* obj, const RTCSessionDescription* desc, std::string& error);
+    DataChannelInterface* ContextCreateDataChannel(
+        Context* ctx, PeerConnectionObject* obj, const char* label, const RTCDataChannelInit* options);
+    void ContextDeleteDataChannel(Context* ctx, DataChannelInterface* channel);
+    void PeerConnectionRegisterIceConnectionChange(PeerConnectionObject* obj, DelegateOnIceConnectionChange callback);
+    void PeerConnectionRegisterIceGatheringChange(PeerConnectionObject* obj, DelegateOnIceGatheringChange callback);
 
-    webrtc::RTCErrorType PeerConnectionSetRemoteDescription(
-        Context* context, PeerConnectionObject* obj, const RTCSessionDescription* desc, std::string& error);
+    void
+    PeerConnectionRegisterConnectionStateChange(PeerConnectionObject* obj, DelegateOnConnectionStateChange callback);
+    void PeerConnectionRegisterOnIceCandidate(PeerConnectionObject* obj, DelegateIceCandidate callback);
+
+    void StatsCollectorRegisterCallback(DelegateCollectStats callback);
+    void CreateSessionDescriptionObserverRegisterCallback(DelegateCreateSessionDesc callback);
 
     webrtc::PeerConnectionInterface::SignalingState PeerConnectionSignalingState(PeerConnectionObject* obj);
 
