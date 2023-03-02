@@ -33,8 +33,8 @@ target_sources(WebRTC
         SetLocalDescriptionObserver.h
         SetRemoteDescriptionObserver.cpp
         SetRemoteDescriptionObserver.h
-        MSO.cpp
-        MSO.h
+        MediaStreamObserverX.cpp
+        MediaStreamObserverX.h
         PeerConnectionStatsCollectorCallback.cpp
         PeerConnectionStatsCollectorCallback.h
         WebRTCPlugin.cpp

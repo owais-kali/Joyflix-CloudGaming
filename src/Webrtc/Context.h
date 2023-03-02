@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MSO.h"
+#include "MediaStreamObserverX.h"
 #include "PeerConnectionObject.h"
 
 namespace webrtc
@@ -65,7 +65,7 @@ public:
     rtc::scoped_refptr<MediaStreamInterface> CreateMediaStream(const std::string& streamId);
     void RegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
     void UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
-    MSO* GetObserver(const webrtc::MediaStreamInterface* stream);
+    MediaStreamObserverX* GetObserver(const webrtc::MediaStreamInterface* stream);
 
     // Audio Source
     rtc::scoped_refptr<AudioSourceInterface> CreateAudioSource();
@@ -110,7 +110,7 @@ private:
     rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> m_peerConnectionFactory;
     std::vector<rtc::scoped_refptr<const webrtc::RTCStatsReport>> m_listStatsReport;
     std::map<const PeerConnectionObject*, std::unique_ptr<PeerConnectionObject>> m_mapClients;
-    std::map<const webrtc::MediaStreamInterface*, std::unique_ptr<MSO>> m_mapMediaStreamObserver;
+    std::map<const webrtc::MediaStreamInterface*, std::unique_ptr<MediaStreamObserverX>> m_mapMediaStreamObserver;
     std::map<const webrtc::PeerConnectionInterface*, rtc::scoped_refptr<SetSessionDescriptionObserver>>
         m_mapSetSessionDescriptionObserver;
     std::map<const DataChannelInterface*, std::unique_ptr<DataChannelObject>> m_mapDataChannels;

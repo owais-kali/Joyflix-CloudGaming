@@ -138,7 +138,7 @@ void Context::UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream
     m_mapMediaStreamObserver.erase(stream);
 }
 
-MSO* Context::GetObserver(const webrtc::MediaStreamInterface* stream) { return m_mapMediaStreamObserver[stream].get(); }
+MediaStreamObserverX* Context::GetObserver(const webrtc::MediaStreamInterface* stream) { return m_mapMediaStreamObserver[stream].get(); }
 
 PeerConnectionObject* Context::CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration& config)
 {

@@ -8,10 +8,10 @@
 namespace webrtc
 {
     class Context;
-    class MSO : public ::webrtc::MediaStreamObserver
+    class MediaStreamObserverX : public MediaStreamObserver
     {
     public:
-        explicit MSO(webrtc::MediaStreamInterface* stream);
+        explicit MediaStreamObserverX(webrtc::MediaStreamInterface* stream);
         void RegisterOnAddTrack(DelegateMediaStreamOnAddTrack callback);
         void RegisterOnRemoveTrack(DelegateMediaStreamOnRemoveTrack callback);
 
