@@ -32,12 +32,12 @@ void StartVulkanApp() {
 WebRTC_Handler *webRtcHandler;
 Signalling_Handler *signalling_handler;
 
-void OnGotRemoteDescription(joyflix::webrtc::API::RTCSdpType type, std::string offer) {
+void OnGotRemoteDescription(webrtc::API::RTCSdpType type, std::string offer) {
     std::cout << "Got Remote Description: " << std::endl;
-    webRtcHandler->SetRemoteDescription(joyflix::webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
+    webRtcHandler->SetRemoteDescription(webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
 }
 
-void OnGotLocalDescription(joyflix::webrtc::API::RTCSdpType type, char *desc) {
+void OnGotLocalDescription(webrtc::API::RTCSdpType type, char *desc) {
     std::cout << "Got Local Description: " << std::endl;
     signalling_handler->SendSDP(type, desc);
     webRtcHandler->SetLocalDescription(type, desc);
