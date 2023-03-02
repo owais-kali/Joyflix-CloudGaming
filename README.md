@@ -47,3 +47,9 @@ fully compatible with multi-platform like Desktop, Android, IOS.
 * [ ] Stream Encoded video to web browser using webrtc 
 * [ ] Send input data from webapp to WebRTC(C++) using DataChannel
 * [ ] Integrate this code to wine-headless repo
+
+## Libraries
+### [WebRTC](https://webrtc.googlesource.com/src/)
+### [com.unity.webrtc](https://github.com/Unity-Technologies/com.unity.webrtc)  [Modified Source to create a wrapper for Google's Webrtc Source]
+### [websocketpp](https://github.com/zaphoyd/websocketpp)
+### [nlohmann/json](https://github.com/nlohmann/json)
