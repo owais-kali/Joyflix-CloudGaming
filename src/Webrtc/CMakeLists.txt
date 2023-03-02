@@ -26,6 +26,8 @@ target_sources(WebRTC
         DataChannelObject.h
         SetLocalDescriptionObserver.cpp
         SetLocalDescriptionObserver.h
+        SetRemoteDescriptionObserver.cpp
+        SetRemoteDescriptionObserver.h
         MSO.cpp
         MSO.h
         PeerConnectionStatsCollectorCallback.cpp
