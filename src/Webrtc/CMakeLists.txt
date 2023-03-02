@@ -16,6 +16,11 @@ target_sources(WebRTC
         pch.h
         PeerConnectionObject.cpp
         PeerConnectionObject.h
+        VideoTrackSource.cpp
+        VideoTrackSource.h
+        VideoFrame.cpp
+        VideoFrameX.h
+        Size.h
         Logger.cpp
         Logger.h
         Context.cpp

@@ -19,16 +19,18 @@ namespace webrtc {
     }
 
     void WebRTCPlugin::ContextRegisterMediaStreamObserver(Context *context, MediaStreamInterface *stream) {
-
+        context->RegisterMediaStreamObserver(stream);
     }
 
     void WebRTCPlugin::ContextUnRegisterMediaStreamObserver(Context *context, MediaStreamInterface *stream) {
-
+        context->UnRegisterMediaStreamObserver(stream);
     }
 
     MediaStreamTrackInterface *WebRTCPlugin::ContextCreateVideoTrack(Context *context, const char *label,
                                                                      webrtc::VideoTrackSourceInterface *source) {
-        return nullptr;
+        rtc::scoped_refptr<VideoTrackInterface> track = context->CreateVideoTrack(label, source);
+        context->AddRefPtr(track);
+        return track.get();
     }
 
     void WebRTCPlugin::ContextStopMediaStreamTrack(Context *context, ::webrtc::MediaStreamTrackInterface *track) {

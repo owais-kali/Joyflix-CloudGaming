@@ -130,7 +130,7 @@ rtc::scoped_refptr<MediaStreamInterface> Context::CreateMediaStream(const std::s
 
 void Context::RegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream)
 {
-    //        m_mapMediaStreamObserver[stream] = std::make_unique<MediaStreamObserver>(stream);
+
 }
 
 void Context::UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream)
@@ -251,5 +251,23 @@ void Context::DeleteDataChannel(DataChannelInterface* channel)
         m_mapDataChannels.erase(channel);
     }
 }
+rtc::scoped_refptr<AudioSourceInterface> Context::CreateAudioSource()
+{
+    return rtc::scoped_refptr<AudioSourceInterface>();
+}
+AudioTrackSinkAdapter* Context::CreateAudioTrackSinkAdapter() { return nullptr; }
+void Context::DeleteAudioTrackSinkAdapter(AudioTrackSinkAdapter* sink) { }
+rtc::scoped_refptr<VideoTrackSource> Context::CreateVideoSource() { return rtc::scoped_refptr<VideoTrackSource>(); }
+rtc::scoped_refptr<VideoTrackInterface>
+Context::CreateVideoTrack(const std::string& label, webrtc::VideoTrackSourceInterface* source)
+{
+    return rtc::scoped_refptr<VideoTrackInterface>();
+}
+rtc::scoped_refptr<AudioTrackInterface>
+Context::CreateAudioTrack(const std::string& label, webrtc::AudioSourceInterface* source)
+{
+    return rtc::scoped_refptr<AudioTrackInterface>();
+}
+void Context::StopMediaStreamTrack(webrtc::MediaStreamTrackInterface* track) { }
 
 } // namespace webrtc

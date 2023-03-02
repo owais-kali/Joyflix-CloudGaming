@@ -67,6 +67,22 @@ public:
     void UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
     MSO* GetObserver(const webrtc::MediaStreamInterface* stream);
 
+    // Audio Source
+    rtc::scoped_refptr<AudioSourceInterface> CreateAudioSource();
+    // Audio Renderer
+    AudioTrackSinkAdapter* CreateAudioTrackSinkAdapter();
+    void DeleteAudioTrackSinkAdapter(AudioTrackSinkAdapter* sink);
+
+    // Video Source
+    rtc::scoped_refptr<VideoTrackSource> CreateVideoSource();
+
+    // MediaStreamTrack
+    rtc::scoped_refptr<VideoTrackInterface>
+    CreateVideoTrack(const std::string& label, webrtc::VideoTrackSourceInterface* source);
+    rtc::scoped_refptr<AudioTrackInterface>
+    CreateAudioTrack(const std::string& label, webrtc::AudioSourceInterface* source);
+    void StopMediaStreamTrack(webrtc::MediaStreamTrackInterface* track);
+
     // PeerConnection
     PeerConnectionObject* CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration& config);
     void DeletePeerConnection(PeerConnectionObject* obj);
