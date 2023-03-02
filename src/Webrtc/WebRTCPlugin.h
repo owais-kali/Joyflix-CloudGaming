@@ -359,6 +359,29 @@ public:
     bool MediaStreamRemoveTrack(MediaStreamInterface* stream, MediaStreamTrackInterface* track);
     char* MediaStreamGetID(MediaStreamInterface* stream);
 
+    void MediaStreamRegisterOnAddTrack(
+        Context* context, MediaStreamInterface* stream, DelegateMediaStreamOnAddTrack callback);
+
+    void MediaStreamRegisterOnRemoveTrack(
+        Context* context, MediaStreamInterface* stream, DelegateMediaStreamOnRemoveTrack callback);
+
+    VideoTrackInterface** MediaStreamGetVideoTracks(MediaStreamInterface* stream, size_t* length);
+    AudioTrackInterface** MediaStreamGetAudioTracks(MediaStreamInterface* stream, size_t* length);
+
+    VideoTrackSourceInterface* ContextGetVideoSource(Context* context, VideoTrackInterface* track);
+
+    TrackKind MediaStreamTrackGetKind(MediaStreamTrackInterface* track);
+    MediaStreamTrackInterface::TrackState MediaStreamTrackGetReadyState(MediaStreamTrackInterface* track);
+
+    char* MediaStreamTrackGetID(MediaStreamTrackInterface* track);
+    bool MediaStreamTrackGetEnabled(MediaStreamTrackInterface* track);
+    void MediaStreamTrackSetEnabled(MediaStreamTrackInterface* track, bool enabled);
+    UnityVideoRenderer* CreateVideoRenderer(Context* context, DelegateVideoFrameResize callback, bool needFlipVertical);
+    uint32_t GetVideoRendererId(UnityVideoRenderer* sink);
+    void DeleteVideoRenderer(Context* context, UnityVideoRenderer* sink);
+    void VideoTrackAddOrUpdateSink(VideoTrackInterface* track, UnityVideoRenderer* sink);
+    void VideoTrackRemoveSink(VideoTrackInterface* track, UnityVideoRenderer* sink);
+
     Context* ContextCreate(int uid);
     void ContextDestroy(int uid);
 

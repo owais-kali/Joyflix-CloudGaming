@@ -1,0 +1,17 @@
+REPO: https://github.com/Unity-Technologies/com.unity.webrtc
+
+COMMIT: b797474cb4aff625c586637fb7966f445a74d319
+
+Author: Brian Harrison <92394761+BrianHarrisonUnity@users.noreply.github.com>
+Date:   Thu Feb 2 20:58:46 2023 -0700
+
+    fix: fix unhandled NVENCException's occuring during initialization & reconfigure calls (#877)
+
+    * fix: fix unhandled NVENCException's occuring during initialization & reconfigure calls
+
+    In rare cases, the encoder will throw a NVENCException with error code 8 during the creation & reconfigure calls.
+    Error code 8 indicates invalid parameters, but in these cases the parameters are valid, and the exceptions seem to occur within the nvidia code.
+    Adding exception handling around these calls to prevent applications from crashing due to an unhandled exception.
+
+    * chore: update native plugins
+

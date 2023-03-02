@@ -34,40 +34,126 @@ namespace webrtc {
     }
 
     void WebRTCPlugin::ContextStopMediaStreamTrack(Context *context, ::webrtc::MediaStreamTrackInterface *track) {
-
+        context->StopMediaStreamTrack(track);
     }
 
     webrtc::VideoTrackSourceInterface *WebRTCPlugin::ContextCreateVideoTrackSource(Context *context) {
-        return nullptr;
+        rtc::scoped_refptr<VideoTrackSourceInterface> source = context->CreateVideoSource();
+        context->AddRefPtr(source);
+        return source.get();
     }
 
     webrtc::AudioSourceInterface *WebRTCPlugin::ContextCreateAudioTrackSource(Context *context) {
-        return nullptr;
+        rtc::scoped_refptr<AudioSourceInterface> source = context->CreateAudioSource();
+        context->AddRefPtr(source);
+        return source.get();
     }
 
     webrtc::MediaStreamTrackInterface *
     WebRTCPlugin::ContextCreateAudioTrack(Context *context, const char *label, webrtc::AudioSourceInterface *source) {
-        return nullptr;
+        rtc::scoped_refptr<AudioTrackInterface> track = context->CreateAudioTrack(label, source);
+        context->AddRefPtr(track);
+        return track.get();
     }
 
     void WebRTCPlugin::ContextAddRefPtr(Context *context, rtc::RefCountInterface *ptr) {
-
+        context->AddRefPtr(ptr);
     }
 
     void WebRTCPlugin::ContextDeleteRefPtr(Context *context, rtc::RefCountInterface *ptr) {
-
+        context->RemoveRefPtr(ptr);
     }
 
     bool WebRTCPlugin::MediaStreamAddTrack(MediaStreamInterface *stream, MediaStreamTrackInterface *track) {
-        return false;
+        if (track->kind() == "audio")
+        {
+            return stream->AddTrack(rtc::scoped_refptr<AudioTrackInterface>(static_cast<AudioTrackInterface*>(track)));
+        }
+        else
+        {
+            return stream->AddTrack(rtc::scoped_refptr<VideoTrackInterface>(static_cast<VideoTrackInterface*>(track)));
+        }
     }
 
     bool WebRTCPlugin::MediaStreamRemoveTrack(MediaStreamInterface *stream, MediaStreamTrackInterface *track) {
-        return false;
+        if (track->kind() == "audio")
+        {
+            return stream->RemoveTrack(
+                    rtc::scoped_refptr<AudioTrackInterface>(static_cast<AudioTrackInterface*>(track)));
+        }
+        else
+        {
+            return stream->RemoveTrack(
+                    rtc::scoped_refptr<VideoTrackInterface>(static_cast<VideoTrackInterface*>(track)));
+        }
     }
 
     char *WebRTCPlugin::MediaStreamGetID(MediaStreamInterface *stream) {
+        return ConvertString(stream->id());
+    }
+
+    void WebRTCPlugin::MediaStreamRegisterOnAddTrack(Context *context, MediaStreamInterface *stream,
+                                                     DelegateMediaStreamOnAddTrack callback) {
+
+    }
+
+    void WebRTCPlugin::MediaStreamRegisterOnRemoveTrack(Context *context, MediaStreamInterface *stream,
+                                                        DelegateMediaStreamOnRemoveTrack callback) {
+
+    }
+
+    VideoTrackInterface **WebRTCPlugin::MediaStreamGetVideoTracks(MediaStreamInterface *stream, size_t *length) {
         return nullptr;
+    }
+
+    AudioTrackInterface **WebRTCPlugin::MediaStreamGetAudioTracks(MediaStreamInterface *stream, size_t *length) {
+        return nullptr;
+    }
+
+    VideoTrackSourceInterface *WebRTCPlugin::ContextGetVideoSource(Context *context, VideoTrackInterface *track) {
+        return nullptr;
+    }
+
+    TrackKind WebRTCPlugin::MediaStreamTrackGetKind(MediaStreamTrackInterface *track) {
+        return TrackKind::Audio;
+    }
+
+    MediaStreamTrackInterface::TrackState
+    WebRTCPlugin::MediaStreamTrackGetReadyState(MediaStreamTrackInterface *track) {
+        return MediaStreamTrackInterface::kEnded;
+    }
+
+    char *WebRTCPlugin::MediaStreamTrackGetID(MediaStreamTrackInterface *track) {
+        return nullptr;
+    }
+
+    bool WebRTCPlugin::MediaStreamTrackGetEnabled(MediaStreamTrackInterface *track) {
+        return false;
+    }
+
+    void WebRTCPlugin::MediaStreamTrackSetEnabled(MediaStreamTrackInterface *track, bool enabled) {
+
+    }
+
+    UnityVideoRenderer *
+    WebRTCPlugin::CreateVideoRenderer(Context *context, DelegateVideoFrameResize callback, bool needFlipVertical) {
+        return nullptr;
+    }
+
+    uint32_t WebRTCPlugin::GetVideoRendererId(UnityVideoRenderer *sink) {
+        return 0;
+    }
+
+    void WebRTCPlugin::DeleteVideoRenderer(Context *context, UnityVideoRenderer *sink) {
+
+    }
+
+    void WebRTCPlugin::VideoTrackAddOrUpdateSink(VideoTrackInterface *track, UnityVideoRenderer *sink) {
+
+    }
+
+    void WebRTCPlugin::VideoTrackRemoveSink(VideoTrackInterface *track, UnityVideoRenderer *sink) {
+
     }
 
     Context *WebRTCPlugin::ContextCreate(int uid) {
