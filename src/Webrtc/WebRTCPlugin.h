@@ -10,7 +10,7 @@ namespace webrtc
 class API;
 class Context;
 class PeerConnectionObject;
-class CSDO;
+class CreateSessionDescriptionObserverX;
 class UnityVideoRenderer;
 class AudioTrackSinkAdapter;
 class PeerConnectionStatsCollectorCallback;
@@ -466,8 +466,8 @@ public:
     RtpTransceiverInterface**
     PeerConnectionGetTransceivers(Context* context, PeerConnectionObject* obj, size_t* length);
 
-    CSDO* PeerConnectionCreateOffer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
-    CSDO* PeerConnectionCreateAnswer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
+    CreateSessionDescriptionObserverX* PeerConnectionCreateOffer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
+    CreateSessionDescriptionObserverX* PeerConnectionCreateAnswer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
 
     DataChannelInterface* ContextCreateDataChannel(
         Context* ctx, PeerConnectionObject* obj, const char* label, const RTCDataChannelInit* options);

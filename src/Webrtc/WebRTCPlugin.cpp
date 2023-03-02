@@ -4,8 +4,8 @@
 #pragma clang diagnostic ignored "-Wunused-variable"
 
 #include "WebRTCPlugin.h"
-#include "CSDO.h"
 #include "Context.h"
+#include "CreateSessionDescriptionObserverX.h"
 #include "Logger.h"
 #include "api/jsep.h"
 
@@ -159,7 +159,7 @@ Context* WebRTCPlugin::ContextCreate(int uid)
     return ctx;
 }
 
-void WebRTCPlugin::ContextDestroy(int uid) { }
+void WebRTCPlugin::ContextDestroy(int uid) { ContextManager::GetInstance()->DestroyContext(uid); }
 
 PeerConnectionObject* WebRTCPlugin::ContextCreatePeerConnection(Context* context)
 {
@@ -180,14 +180,13 @@ PeerConnectionObject* WebRTCPlugin::ContextCreatePeerConnectionWithConfig(Contex
     return context->CreatePeerConnection(config);
 }
 
-void WebRTCPlugin::ContextDeletePeerConnection(Context* context, PeerConnectionObject* obj) {
+void WebRTCPlugin::ContextDeletePeerConnection(Context* context, PeerConnectionObject* obj)
+{
     obj->Close();
     context->DeletePeerConnection(obj);
 }
 
-void WebRTCPlugin::PeerConnectionClose(PeerConnectionObject* obj) {
-    obj->Close();
-}
+void WebRTCPlugin::PeerConnectionClose(PeerConnectionObject* obj) { obj->Close(); }
 
 void WebRTCPlugin::PeerConnectionRestartIce(PeerConnectionObject* obj) { }
 
@@ -310,18 +309,18 @@ void WebRTCPlugin::PeerConnectionRegisterOnIceCandidate(PeerConnectionObject* ob
     obj->RegisterIceCandidate(callback);
 }
 
-CSDO* WebRTCPlugin::PeerConnectionCreateOffer(
+CreateSessionDescriptionObserverX* WebRTCPlugin::PeerConnectionCreateOffer(
     Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options)
 {
-    auto observer = CSDO::Create(obj);
+    auto observer = CreateSessionDescriptionObserverX::Create(obj);
     obj->CreateOffer(*options, observer.get());
     return observer.get();
 }
 
-CSDO* WebRTCPlugin::PeerConnectionCreateAnswer(
+CreateSessionDescriptionObserverX* WebRTCPlugin::PeerConnectionCreateAnswer(
     Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options)
 {
-    auto observer = CSDO::Create(obj);
+    auto observer = CreateSessionDescriptionObserverX::Create(obj);
     obj->CreateAnswer(*options, observer.get());
     return observer.get();
 }
@@ -465,7 +464,9 @@ void WebRTCPlugin::PeerConnectionRegisterConnectionStateChange(
 
 void WebRTCPlugin::StatsCollectorRegisterCallback(DelegateCollectStats callback) { }
 
-void WebRTCPlugin::CreateSessionDescriptionObserverRegisterCallback(DelegateCreateSessionDesc callback) { }
+void WebRTCPlugin::CreateSessionDescriptionObserverRegisterCallback(DelegateCreateSessionDesc callback) {
+    CreateSessionDescriptionObserverX::RegisterCallback(callback);
+}
 
 char* ConvertString(const std::string str)
 {
@@ -476,4 +477,4 @@ char* ConvertString(const std::string str)
     return ret;
 }
 
-} // namespace webrtc
+}

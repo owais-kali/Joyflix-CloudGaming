@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     StartSignallingServer();
 
-    webRtcHandler = new WebRTC_Handler(OnGotLocalDescription, OnGotLocalIceCandidate);
+    webRtcHandler = new WebRTC_Handler;
     webRtcHandler->StartWebRTCApp();
 
     while (!stop);

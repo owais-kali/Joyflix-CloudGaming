@@ -6,9 +6,9 @@ using namespace webrtc;
 class WebRTC_Handler {
 private:
     API api;
-
+    PeerConnectionObject* pc;
 public:
-    WebRTC_Handler(API::DelegateOnGotDescription onGotDescriptionCallback, API::DelegateOnGotICECandidate onGotIceCandidateCallback);
+    WebRTC_Handler();
     ~WebRTC_Handler();
     void StartWebRTCApp();
     void StopWebRTCApp();

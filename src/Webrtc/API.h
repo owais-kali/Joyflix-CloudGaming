@@ -1,19 +1,26 @@
 #pragma once
-#define _Context void*
+typedef unsigned int uint;
 
 namespace webrtc
 {
+class API;
 class WebRTCPlugin;
 class Context;
 class PeerConnectionObject;
 
+class RTCPeerConnection{
+private:
+    PeerConnectionObject* pco;
+public:
+    RTCPeerConnection();
+    RTCPeerConnection(const char* config);
+};
+
 class API
 {
 private:
-    API* api;
-    WebRTCPlugin* plugin;
-    Context* ctx;
-    PeerConnectionObject* pco;
+    Context* current_context;
+    PeerConnectionObject* current_pco;
 
 public:
     enum class RTCSdpType
@@ -33,21 +40,14 @@ public:
         kClosed,
     };
 
-    using DelegateOnGotDescription = void (*)(RTCSdpType, char*);
-    using DelegateOnGotICECandidate = void (*)(char*, char*, int);
-
-    DelegateOnGotDescription GotDescriptionCallback;
-    DelegateOnGotICECandidate GotICECandidateCallback;
-
-    API(DelegateOnGotDescription onGotDescriptionCallback, DelegateOnGotICECandidate onGotICECandidateCallback);
-
+    API();
     ~API();
 
-    _Context ContextCreate();
-
+    void ContextCreate();
     void ContextDestroy();
 
-    void StartWebRTCServer();
+    PeerConnectionObject* CreatePeerConnection();
+    void DeletePeerConnection(PeerConnectionObject* pco);
 
     void SetLocalDescription(RTCSdpType type, char* sdp);
 
@@ -55,8 +55,9 @@ public:
 
     void AddICECandidate(char* candidate, char* sdpMLineIndex, int sdpMid);
 
+    void CreateOffer();
     void CreateAnswer();
 
-    SignalingState GetSignallingState();
+    SignalingState GetSignallingState(PeerConnectionObject* pco);
 };
 }

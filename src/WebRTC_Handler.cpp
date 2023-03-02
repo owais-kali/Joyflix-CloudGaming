@@ -6,8 +6,7 @@
 std::future<void> AddICECandidateFunc;
 volatile sig_atomic_t StopAddICECandidateFunc;
 
-WebRTC_Handler::WebRTC_Handler(API::DelegateOnGotDescription onGotDescriptionCallback, API::DelegateOnGotICECandidate onGotIceCandidateCallback)
-: api(onGotDescriptionCallback, onGotIceCandidateCallback)
+WebRTC_Handler::WebRTC_Handler()
 {
     
 }
@@ -21,7 +20,8 @@ WebRTC_Handler::~WebRTC_Handler() {
 
 void WebRTC_Handler::StartWebRTCApp(){
     api.ContextCreate();
-    api.StartWebRTCServer();
+    pc = api.CreatePeerConnection();
+    api.CreateOffer();
 }
 
 void WebRTC_Handler::StopWebRTCApp(){
@@ -46,7 +46,7 @@ void WebRTC_Handler::AddICECandidate(char *candidate, char *sdpMLineIndex, int s
     return;
     AddICECandidateFunc = std::async([]( API* api, std::string candidate, std::string sdpMLineIndex, int sdpMid){
         while (!StopAddICECandidateFunc) {
-            API::SignalingState state = api->GetSignallingState();
+            API::SignalingState state; //= api->GetSignallingState();
             switch (state) {
                 case API::kHaveRemoteOffer:
                     printf("kStable\n");

@@ -25,8 +25,8 @@ target_sources(WebRTC
         Logger.h
         Context.cpp
         Context.h
-        CSDO.h
-        CSDO.cpp
+        CreateSessionDescriptionObserverX.h
+        CreateSessionDescriptionObserverX.cpp
         DataChannelObject.cpp
         DataChannelObject.h
         SetLocalDescriptionObserver.cpp

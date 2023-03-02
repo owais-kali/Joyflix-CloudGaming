@@ -71,6 +71,10 @@ RTCErrorType PeerConnectionObject::SetConfiguration(const std::string& config) {
 std::string PeerConnectionObject::GetConfiguration() const { return nullptr; }
 void PeerConnectionObject::CreateOffer(const RTCOfferAnswerOptions& options, CreateSessionDescriptionObserver* observer)
 {
+    webrtc::PeerConnectionInterface::RTCOfferAnswerOptions _options;
+    _options.ice_restart = options.iceRestart;
+    _options.voice_activity_detection = options.voiceActivityDetection;
+    connection->CreateOffer(observer, _options);
 }
 void PeerConnectionObject::CreateAnswer(
     const RTCOfferAnswerOptions& options, CreateSessionDescriptionObserver* observer)
