@@ -30,11 +30,34 @@ const std::map<std::string, uint32_t> statsTypes = { { "codec", 0 },
 enum class RTCSdpType;
 class SSDO;
 
+struct ContextDependencies
+{
+};
+
+class ContextManager
+{
+public:
+    static ContextManager* GetInstance();
+    ~ContextManager();
+
+    Context* GetContext(int uid) const;
+    Context* CreateContext(int uid, ContextDependencies& dependencies);
+    void DestroyContext(int uid);
+    void SetCurContext(Context*);
+    bool Exists(Context* context);
+    using ContextPtr = std::unique_ptr<Context>;
+    Context* curContext = nullptr;
+    std::mutex mutex;
+
+private:
+    std::map<int, ContextPtr> m_contexts;
+    static std::unique_ptr<ContextManager> s_instance;
+};
+
 class Context
 {
 public:
-    Context();
-
+    Context(ContextDependencies& dependencies);
     ~Context();
 
     bool ExistsRefPtr(const rtc::RefCountInterface* ptr) const { return m_mapRefPtr.find(ptr) != m_mapRefPtr.end(); }

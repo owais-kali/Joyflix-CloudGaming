@@ -23,13 +23,12 @@ API::~API()
 void* API::ContextCreate()
 {
     DebugLog("Context Created!");
-    ctx = new Context;
-    return ctx;
+    ctx = plugin->ContextCreate(0);
 }
 
 void API::ContextDestroy()
 {
-    delete ctx;
+    plugin->ContextDestroy(0);
     DebugLog("Context Destroyed!");
 }
 

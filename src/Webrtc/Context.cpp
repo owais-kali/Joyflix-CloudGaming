@@ -12,10 +12,74 @@
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 
+#include "Logger.h"
+
 namespace webrtc
 {
 
 using namespace webrtc;
+
+std::unique_ptr<ContextManager> ContextManager::s_instance;
+ContextManager* ContextManager::GetInstance()
+{
+    if (s_instance == nullptr)
+    {
+        s_instance = std::make_unique<ContextManager>();
+    }
+    return s_instance.get();
+}
+
+Context* ContextManager::GetContext(int uid) const
+{
+    auto it = s_instance->m_contexts.find(uid);
+    if (it != s_instance->m_contexts.end())
+    {
+        return it->second.get();
+    }
+    return nullptr;
+}
+
+Context* ContextManager::CreateContext(int uid, ContextDependencies& dependencies)
+{
+    auto it = s_instance->m_contexts.find(uid);
+    if (it != s_instance->m_contexts.end())
+    {
+        DebugLog("Using already created context with ID %d", uid);
+        return nullptr;
+    }
+    s_instance->m_contexts[uid] = std::make_unique<Context>(dependencies);
+    return s_instance->m_contexts[uid].get();
+}
+
+void ContextManager::SetCurContext(Context* context) { curContext = context; }
+
+bool ContextManager::Exists(Context* context)
+{
+    for (auto it = s_instance->m_contexts.begin(); it != s_instance->m_contexts.end(); ++it)
+    {
+        if (it->second.get() == context)
+            return true;
+    }
+    return false;
+}
+
+void ContextManager::DestroyContext(int uid)
+{
+    auto it = s_instance->m_contexts.find(uid);
+    if (it != s_instance->m_contexts.end())
+    {
+        s_instance->m_contexts.erase(it);
+    }
+}
+
+ContextManager::~ContextManager()
+{
+    if (m_contexts.size())
+    {
+        DebugWarning("%lu remaining context(s) registered", m_contexts.size());
+    }
+    m_contexts.clear();
+}
 
 bool Convert(const std::string& str, webrtc::PeerConnectionInterface::RTCConfiguration& config)
 {
@@ -71,7 +135,7 @@ bool Convert(const std::string& str, webrtc::PeerConnectionInterface::RTCConfigu
     return true;
 }
 
-Context::Context()
+Context::Context(ContextDependencies& dependencies)
     : m_workerThread(rtc::Thread::CreateWithSocketServer())
     , m_signalingThread(rtc::Thread::CreateWithSocketServer())
     , m_taskQueueFactory(CreateDefaultTaskQueueFactory())
