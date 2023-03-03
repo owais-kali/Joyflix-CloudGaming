@@ -6,7 +6,7 @@ using namespace webrtc;
 class WebRTC_Handler {
 private:
     API api;
-    PeerConnectionObject* pc;
+    RTCPeerConnection pc;
 public:
     WebRTC_Handler();
     ~WebRTC_Handler();

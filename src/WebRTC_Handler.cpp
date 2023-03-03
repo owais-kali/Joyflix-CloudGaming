@@ -19,13 +19,14 @@ WebRTC_Handler::~WebRTC_Handler() {
 }
 
 void WebRTC_Handler::StartWebRTCApp(){
-    api.ContextCreate();
-    pc = api.CreatePeerConnection();
-    api.CreateOffer();
+    pc.OnLocalDescription([](RTCSdpType sdpType, const char* desc, RTCErrorType errorType, const char* errMsg) {
+                              printf("Got SDP \ntype:%d\n desc:\n%s\n", sdpType,desc);
+    });
+    pc.CreateOffer(webrtc::RTCOfferAnswerOptions{ true, true});
 }
 
 void WebRTC_Handler::StopWebRTCApp(){
-    api.ContextDestroy();
+
 }
 
 void WebRTC_Handler::SetLocalDescription(API::RTCSdpType sdpType, char* sdp) {
@@ -35,7 +36,7 @@ void WebRTC_Handler::SetLocalDescription(API::RTCSdpType sdpType, char* sdp) {
 void WebRTC_Handler::SetRemoteDescription(API::RTCSdpType sdpType, char *sdp) {
     api.SetRemoteDescription(sdpType, sdp);
     if(sdpType == API::RTCSdpType::Offer){
-        api.CreateAnswer();
+
     }
 }
 

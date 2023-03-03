@@ -12,11 +12,7 @@ class CreateSessionDescriptionObserver;
 enum class RTCSdpType;
 enum class RTCErrorType;
 
-struct RTCOfferAnswerOptions
-{
-    bool iceRestart;
-    bool voiceActivityDetection;
-};
+struct RTCOfferAnswerOptions;
 
 using DelegateOnLocalDescription = void (*)(RTCSdpType, const char*, RTCErrorType, const char*);
 
