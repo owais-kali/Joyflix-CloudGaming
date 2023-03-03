@@ -7,9 +7,6 @@
 
 namespace webrtc
 {
-class SetRemoteDescriptionObserver;
-using DelegateSetRemoteDesc = void (*)(PeerConnectionObject*, SetRemoteDescriptionObserver*, RTCErrorType, const char*);
-
 class SetRemoteDescriptionObserver : public ::webrtc::SetRemoteDescriptionObserverInterface
 {
 public:

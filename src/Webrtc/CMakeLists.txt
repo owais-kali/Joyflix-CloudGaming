@@ -2,7 +2,7 @@ set(CMAKE_CXX_COMPILER ${WEBRTC_SRC}/third_party/llvm-build/Release+Asserts/bin/
 
 #JSON_CPP
 file(GLOB_RECURSE JSON_CPP_OBJS
-        out/Debug/obj/third_party/jsoncpp/jsoncpp/
+        ${WEBRTC_BUILD}/obj/third_party/jsoncpp/jsoncpp/
         ${WEBRTC_BUILD}/obj/third_party/jsoncpp/jsoncpp/*.o
         )
 
@@ -21,20 +21,21 @@ target_sources(WebRTC
         VideoFrame.cpp
         VideoFrameX.h
         Size.h
+        Types.h
         Logger.cpp
         Logger.h
         Context.cpp
         Context.h
-        CSDO.h
-        CSDO.cpp
+        CreateSessionDescriptionObserverX.h
+        CreateSessionDescriptionObserverX.cpp
         DataChannelObject.cpp
         DataChannelObject.h
         SetLocalDescriptionObserver.cpp
         SetLocalDescriptionObserver.h
         SetRemoteDescriptionObserver.cpp
         SetRemoteDescriptionObserver.h
-        MSO.cpp
-        MSO.h
+        MediaStreamObserverX.cpp
+        MediaStreamObserverX.h
         PeerConnectionStatsCollectorCallback.cpp
         PeerConnectionStatsCollectorCallback.h
         WebRTCPlugin.cpp
@@ -53,6 +54,6 @@ target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/third_party/jsonc
 
 target_link_libraries(WebRTC
         PRIVATE
-        ${WEBRTC_SRC}/out/Debug/obj/libwebrtc.a
+        ${WEBRTC_BUILD}/obj/libwebrtc.a
         ${JSON_CPP_OBJS}
         )

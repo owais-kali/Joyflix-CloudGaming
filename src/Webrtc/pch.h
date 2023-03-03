@@ -73,8 +73,6 @@ namespace joyflix
 {
 namespace webrtc
 {
-#define CoTaskMemAlloc(p) malloc(p)
-#define CoTaskMemFree(p) free(p)
 
     using byte = unsigned char;
     using uint8 = unsigned char;

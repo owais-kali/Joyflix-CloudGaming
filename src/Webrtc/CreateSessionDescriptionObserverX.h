@@ -6,18 +6,18 @@
 
 namespace webrtc
 {
-class CSDO : public ::webrtc::CreateSessionDescriptionObserver
+class CreateSessionDescriptionObserverX : public ::webrtc::CreateSessionDescriptionObserver
 {
 public:
-    static rtc::scoped_refptr<CSDO> Create(PeerConnectionObject* connection);
+    static rtc::scoped_refptr<CreateSessionDescriptionObserverX> Create(PeerConnectionObject* connection);
     static void RegisterCallback(DelegateCreateSessionDesc callback) { s_createSessionDescCallback = callback; }
 
     void OnSuccess(SessionDescriptionInterface* desc) override;
     void OnFailure(webrtc::RTCError error) override;
 
 protected:
-    explicit CSDO(PeerConnectionObject* connection);
-    ~CSDO() override = default;
+    explicit CreateSessionDescriptionObserverX(PeerConnectionObject* connection);
+    ~CreateSessionDescriptionObserverX() override = default;
 
 private:
     PeerConnectionObject* m_connection;

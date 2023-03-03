@@ -10,7 +10,7 @@ namespace webrtc
 class API;
 class Context;
 class PeerConnectionObject;
-class CSDO;
+class CreateSessionDescriptionObserverX;
 class UnityVideoRenderer;
 class AudioTrackSinkAdapter;
 class PeerConnectionStatsCollectorCallback;
@@ -33,19 +33,13 @@ using DelegateCollectStats =
 using DelegateCreateSessionDesc = void (*)(
     PeerConnectionObject*, CreateSessionDescriptionObserver*, RTCSdpType, const char*, RTCErrorType, const char*);
 
-enum class RTCSdpType
-{
-    Offer,
-    PrAnswer,
-    Answer,
-    Rollback
-};
+using DelegateSetLocalDesc =
+    void (*)(PeerConnectionObject*, SetLocalDescriptionObserver*, RTCErrorType, const char*);
 
-struct RTCSessionDescription
-{
-    RTCSdpType type;
-    const char* sdp;
-};
+using DelegateSetRemoteDesc =
+    void (*)(PeerConnectionObject*, SetRemoteDescriptionObserver*, RTCErrorType, const char*);
+
+struct RTCSessionDescription;
 
 enum class RTCPeerConnectionState
 {
@@ -105,11 +99,7 @@ enum class TrackKind
     Video
 };
 
-struct RTCOfferAnswerOptions
-{
-    bool iceRestart;
-    bool voiceActivityDetection;
-};
+struct RTCOfferAnswerOptions;
 
 struct RTCIceServer
 {
@@ -139,43 +129,6 @@ struct RTCIceCandidateInit
     char* candidate;
     char* sdpMid;
     int32_t sdpMLineIndex;
-};
-
-char* ConvertString(const std::string str);
-
-struct Candidate
-{
-    char* candidate;
-    int32_t component;
-    char* foundation;
-    char* ip;
-    uint16_t port;
-    uint32_t priority;
-    char* address;
-    char* protocol;
-    char* relatedAddress;
-    uint16_t relatedPort;
-    char* tcpType;
-    char* type;
-    char* usernameFragment;
-
-    Candidate& operator=(const cricket::Candidate& obj)
-    {
-        candidate = ConvertString(obj.ToString());
-        component = obj.component();
-        foundation = ConvertString(obj.foundation());
-        ip = ConvertString(obj.address().ipaddr().ToString());
-        port = obj.address().port();
-        priority = obj.priority();
-        address = ConvertString(obj.address().ToString());
-        protocol = ConvertString(obj.protocol());
-        relatedAddress = ConvertString(obj.related_address().ToString());
-        relatedPort = obj.related_address().port();
-        tcpType = ConvertString(obj.tcptype());
-        type = ConvertString(obj.type());
-        usernameFragment = ConvertString(obj.username());
-        return *this;
-    }
 };
 
 template<typename T>
@@ -254,7 +207,7 @@ struct RTCRtpEncodingParameters
     Optional<uint64_t> minBitrate;
     Optional<uint32_t> maxFramerate;
     Optional<double> scaleResolutionDownBy;
-    char* rid;
+    std::string rid;
 
     RTCRtpEncodingParameters& operator=(const RtpEncodingParameters& obj)
     {
@@ -263,7 +216,7 @@ struct RTCRtpEncodingParameters
         minBitrate = obj.min_bitrate_bps;
         maxFramerate = obj.max_framerate;
         scaleResolutionDownBy = obj.scale_resolution_down_by;
-        rid = ConvertString(obj.rid);
+        rid = obj.rid;
         return *this;
     }
 
@@ -275,8 +228,8 @@ struct RTCRtpEncodingParameters
         dst.min_bitrate_bps = static_cast<absl::optional<int>>(ConvertOptional(minBitrate));
         dst.max_framerate = static_cast<absl::optional<double>>(ConvertOptional(maxFramerate));
         dst.scale_resolution_down_by = ConvertOptional(scaleResolutionDownBy);
-        if (rid != nullptr)
-            dst.rid = std::string(rid);
+        if (rid != "")
+            dst.rid = rid;
         return dst;
     }
 };
@@ -359,6 +312,29 @@ public:
     bool MediaStreamRemoveTrack(MediaStreamInterface* stream, MediaStreamTrackInterface* track);
     char* MediaStreamGetID(MediaStreamInterface* stream);
 
+    void MediaStreamRegisterOnAddTrack(
+        Context* context, MediaStreamInterface* stream, DelegateMediaStreamOnAddTrack callback);
+
+    void MediaStreamRegisterOnRemoveTrack(
+        Context* context, MediaStreamInterface* stream, DelegateMediaStreamOnRemoveTrack callback);
+
+    VideoTrackInterface** MediaStreamGetVideoTracks(MediaStreamInterface* stream, size_t* length);
+    AudioTrackInterface** MediaStreamGetAudioTracks(MediaStreamInterface* stream, size_t* length);
+
+    VideoTrackSourceInterface* ContextGetVideoSource(Context* context, VideoTrackInterface* track);
+
+    TrackKind MediaStreamTrackGetKind(MediaStreamTrackInterface* track);
+    MediaStreamTrackInterface::TrackState MediaStreamTrackGetReadyState(MediaStreamTrackInterface* track);
+
+    char* MediaStreamTrackGetID(MediaStreamTrackInterface* track);
+    bool MediaStreamTrackGetEnabled(MediaStreamTrackInterface* track);
+    void MediaStreamTrackSetEnabled(MediaStreamTrackInterface* track, bool enabled);
+    UnityVideoRenderer* CreateVideoRenderer(Context* context, DelegateVideoFrameResize callback, bool needFlipVertical);
+    uint32_t GetVideoRendererId(UnityVideoRenderer* sink);
+    void DeleteVideoRenderer(Context* context, UnityVideoRenderer* sink);
+    void VideoTrackAddOrUpdateSink(VideoTrackInterface* track, UnityVideoRenderer* sink);
+    void VideoTrackRemoveSink(VideoTrackInterface* track, UnityVideoRenderer* sink);
+
     Context* ContextCreate(int uid);
     void ContextDestroy(int uid);
 
@@ -423,13 +399,13 @@ public:
     RTCStatsMemberInterface::Type StatsMemberGetType(const RTCStatsMemberInterface* member);
 
     SetLocalDescriptionObserver* PeerConnectionSetLocalDescription(
-        PeerConnectionObject* obj, const RTCSessionDescription* desc, RTCErrorType* errorType, char* error[]);
+        PeerConnectionObject* obj, const RTCSessionDescription* desc);
 
     SetLocalDescriptionObserver* PeerConnectionSetLocalDescriptionWithoutDescription(
         PeerConnectionObject* obj, RTCErrorType* errorType, char* error[]);
 
     SetRemoteDescriptionObserver* PeerConnectionSetRemoteDescription(
-        PeerConnectionObject* obj, const RTCSessionDescription* desc, RTCErrorType* errorType, char* error[]);
+        PeerConnectionObject* obj, const RTCSessionDescription* desc);
 
     bool PeerConnectionGetLocalDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
     bool PeerConnectionGetRemoteDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
@@ -443,8 +419,8 @@ public:
     RtpTransceiverInterface**
     PeerConnectionGetTransceivers(Context* context, PeerConnectionObject* obj, size_t* length);
 
-    CSDO* PeerConnectionCreateOffer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
-    CSDO* PeerConnectionCreateAnswer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
+    CreateSessionDescriptionObserverX* PeerConnectionCreateOffer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
+    CreateSessionDescriptionObserverX* PeerConnectionCreateAnswer(Context* context, PeerConnectionObject* obj, const RTCOfferAnswerOptions* options);
 
     DataChannelInterface* ContextCreateDataChannel(
         Context* ctx, PeerConnectionObject* obj, const char* label, const RTCDataChannelInit* options);
@@ -458,6 +434,8 @@ public:
 
     void StatsCollectorRegisterCallback(DelegateCollectStats callback);
     void CreateSessionDescriptionObserverRegisterCallback(DelegateCreateSessionDesc callback);
+    void SetLocalDescriptionObserverRegisterCallback(DelegateSetLocalDesc callback);
+    void SetRemoteDescriptionObserverRegisterCallback(DelegateSetRemoteDesc callback);
 
     webrtc::PeerConnectionInterface::SignalingState PeerConnectionSignalingState(PeerConnectionObject* obj);
 

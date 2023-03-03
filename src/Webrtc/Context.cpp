@@ -12,10 +12,74 @@
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 
+#include "Logger.h"
+
 namespace webrtc
 {
 
 using namespace webrtc;
+
+std::unique_ptr<ContextManager> ContextManager::s_instance;
+ContextManager* ContextManager::GetInstance()
+{
+    if (s_instance == nullptr)
+    {
+        s_instance = std::make_unique<ContextManager>();
+    }
+    return s_instance.get();
+}
+
+Context* ContextManager::GetContext(int uid) const
+{
+    auto it = s_instance->m_contexts.find(uid);
+    if (it != s_instance->m_contexts.end())
+    {
+        return it->second.get();
+    }
+    return nullptr;
+}
+
+Context* ContextManager::CreateContext(int uid, ContextDependencies& dependencies)
+{
+    auto it = s_instance->m_contexts.find(uid);
+    if (it != s_instance->m_contexts.end())
+    {
+        DebugLog("Using already created context with ID %d", uid);
+        return nullptr;
+    }
+    s_instance->m_contexts[uid] = std::make_unique<Context>(dependencies);
+    return s_instance->m_contexts[uid].get();
+}
+
+void ContextManager::SetCurContext(Context* context) { curContext = context; }
+
+bool ContextManager::Exists(Context* context)
+{
+    for (auto it = s_instance->m_contexts.begin(); it != s_instance->m_contexts.end(); ++it)
+    {
+        if (it->second.get() == context)
+            return true;
+    }
+    return false;
+}
+
+void ContextManager::DestroyContext(int uid)
+{
+    auto it = s_instance->m_contexts.find(uid);
+    if (it != s_instance->m_contexts.end())
+    {
+        s_instance->m_contexts.erase(it);
+    }
+}
+
+ContextManager::~ContextManager()
+{
+    if (m_contexts.size())
+    {
+        DebugWarning("%lu remaining context(s) registered", m_contexts.size());
+    }
+    m_contexts.clear();
+}
 
 bool Convert(const std::string& str, webrtc::PeerConnectionInterface::RTCConfiguration& config)
 {
@@ -71,7 +135,7 @@ bool Convert(const std::string& str, webrtc::PeerConnectionInterface::RTCConfigu
     return true;
 }
 
-Context::Context()
+Context::Context(ContextDependencies& dependencies)
     : m_workerThread(rtc::Thread::CreateWithSocketServer())
     , m_signalingThread(rtc::Thread::CreateWithSocketServer())
     , m_taskQueueFactory(CreateDefaultTaskQueueFactory())
@@ -138,7 +202,7 @@ void Context::UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream
     m_mapMediaStreamObserver.erase(stream);
 }
 
-MSO* Context::GetObserver(const webrtc::MediaStreamInterface* stream) { return m_mapMediaStreamObserver[stream].get(); }
+MediaStreamObserverX* Context::GetObserver(const webrtc::MediaStreamInterface* stream) { return m_mapMediaStreamObserver[stream].get(); }
 
 PeerConnectionObject* Context::CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration& config)
 {
@@ -166,36 +230,7 @@ void Context::AddStatsReport(const rtc::scoped_refptr<const webrtc::RTCStatsRepo
 
 const RTCStats** Context::GetStatsList(const RTCStatsReport* report, size_t* length, uint32_t** types)
 {
-    std::lock_guard<std::mutex> lock(mutexStatsReport);
-
-    auto result = std::find_if(
-        m_listStatsReport.begin(),
-        m_listStatsReport.end(),
-        [report](rtc::scoped_refptr<const webrtc::RTCStatsReport> it) { return it.get() == report; });
-
-    if (result == m_listStatsReport.end())
-    {
-        RTC_LOG(LS_INFO) << "Calling GetStatsList is failed. The reference of RTCStatsReport is not found.";
-        return nullptr;
-    }
-
-    const size_t size = report->size();
-    *length = size;
-    *types = static_cast<uint32_t*>(CoTaskMemAlloc(sizeof(uint32_t) * size));
-    void* buf = CoTaskMemAlloc(sizeof(RTCStats*) * size);
-    const RTCStats** ret = static_cast<const RTCStats**>(buf);
-    if (size == 0)
-    {
-        return ret;
-    }
-    int i = 0;
-    for (const auto& stats : *report)
-    {
-        ret[i] = &stats;
-        (*types)[i] = statsTypes.at(stats.type());
-        i++;
-    }
-    return ret;
+    NOT_IMPLEMENTED("GetStatsList");
 }
 
 void Context::DeleteStatsReport(const webrtc::RTCStatsReport* report)

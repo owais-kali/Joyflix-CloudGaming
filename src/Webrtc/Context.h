@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MSO.h"
+#include "MediaStreamObserverX.h"
 #include "PeerConnectionObject.h"
 
 namespace webrtc
@@ -30,11 +30,34 @@ const std::map<std::string, uint32_t> statsTypes = { { "codec", 0 },
 enum class RTCSdpType;
 class SSDO;
 
+struct ContextDependencies
+{
+};
+
+class ContextManager
+{
+public:
+    static ContextManager* GetInstance();
+    ~ContextManager();
+
+    Context* GetContext(int uid) const;
+    Context* CreateContext(int uid, ContextDependencies& dependencies);
+    void DestroyContext(int uid);
+    void SetCurContext(Context*);
+    bool Exists(Context* context);
+    using ContextPtr = std::unique_ptr<Context>;
+    Context* curContext = nullptr;
+    std::mutex mutex;
+
+private:
+    std::map<int, ContextPtr> m_contexts;
+    static std::unique_ptr<ContextManager> s_instance;
+};
+
 class Context
 {
 public:
-    Context();
-
+    Context(ContextDependencies& dependencies);
     ~Context();
 
     bool ExistsRefPtr(const rtc::RefCountInterface* ptr) const { return m_mapRefPtr.find(ptr) != m_mapRefPtr.end(); }
@@ -65,7 +88,7 @@ public:
     rtc::scoped_refptr<MediaStreamInterface> CreateMediaStream(const std::string& streamId);
     void RegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
     void UnRegisterMediaStreamObserver(webrtc::MediaStreamInterface* stream);
-    MSO* GetObserver(const webrtc::MediaStreamInterface* stream);
+    MediaStreamObserverX* GetObserver(const webrtc::MediaStreamInterface* stream);
 
     // Audio Source
     rtc::scoped_refptr<AudioSourceInterface> CreateAudioSource();
@@ -110,7 +133,7 @@ private:
     rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> m_peerConnectionFactory;
     std::vector<rtc::scoped_refptr<const webrtc::RTCStatsReport>> m_listStatsReport;
     std::map<const PeerConnectionObject*, std::unique_ptr<PeerConnectionObject>> m_mapClients;
-    std::map<const webrtc::MediaStreamInterface*, std::unique_ptr<MSO>> m_mapMediaStreamObserver;
+    std::map<const webrtc::MediaStreamInterface*, std::unique_ptr<MediaStreamObserverX>> m_mapMediaStreamObserver;
     std::map<const webrtc::PeerConnectionInterface*, rtc::scoped_refptr<SetSessionDescriptionObserver>>
         m_mapSetSessionDescriptionObserver;
     std::map<const DataChannelInterface*, std::unique_ptr<DataChannelObject>> m_mapDataChannels;

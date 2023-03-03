@@ -1,61 +1,66 @@
 #include "WebRTC_Handler.h"
-#include <future>
-#include <unistd.h>
-#include <csignal>
+#include "Webrtc/Types.h"
+#include "functional"
 
-std::future<void> AddICECandidateFunc;
-volatile sig_atomic_t StopAddICECandidateFunc;
+WebRTC_Handler* WebRTC_Handler::s_instance;
+WebRTC_Handler* WebRTC_Handler::GetInstance() { return s_instance; }
 
-WebRTC_Handler::WebRTC_Handler(API::DelegateOnGotDescription onGotDescriptionCallback, API::DelegateOnGotICECandidate onGotIceCandidateCallback)
-: api(onGotDescriptionCallback, onGotIceCandidateCallback)
+void WebRTC_Handler::OnGotRemoteDescription(webrtc::RTCSdpType type, std::string sdp)
 {
-    
+    printf("Got Remote SDP %s\n", sdp.c_str());
+    PC.SetRemoteDescription({ type, sdp.c_str() });
+    PC.CreateAnswer({ true, true });
 }
 
-WebRTC_Handler::~WebRTC_Handler() {
-    if(AddICECandidateFunc.valid()){
-        StopAddICECandidateFunc = 1;
-        AddICECandidateFunc.wait();
+void WebRTC_Handler::OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid)
+{
+    printf("Got Remote ICE %s\n", ice.c_str());
+}
+
+void WebRTC_Handler::OnGotLocalDescription(RTCSdpType sdpType, std::string sdp)
+{
+    PC.SetLocalDescription({ sdpType, sdp.c_str() });
+    signalling_handler->SendSDP(sdpType, sdp);
+    printf("Got Local SDP %s\n", sdp.c_str());
+}
+
+WebRTC_Handler::WebRTC_Handler()
+    : signalling_port(3001)
+    , signalling_handler(std::make_unique<Signalling_Handler>(
+          signalling_port,
+          std::bind(&WebRTC_Handler::OnGotRemoteDescription, this, std::placeholders::_1, std::placeholders::_2),
+          std::bind(
+              &WebRTC_Handler::OnGotRemoteIceCandidate,
+              this,
+              std::placeholders::_1,
+              std::placeholders::_2,
+              std::placeholders::_3)))
+{
+    if (s_instance == nullptr)
+    {
+        s_instance = this;
     }
-}
-
-void WebRTC_Handler::StartWebRTCApp(){
-    api.ContextCreate();
-    api.StartWebRTCServer();
-}
-
-void WebRTC_Handler::StopWebRTCApp(){
-    api.ContextDestroy();
-}
-
-void WebRTC_Handler::SetLocalDescription(API::RTCSdpType sdpType, char* sdp) {
-    api.SetLocalDescription(sdpType, sdp);
-}
-
-void WebRTC_Handler::SetRemoteDescription(API::RTCSdpType sdpType, char *sdp) {
-    api.SetRemoteDescription(sdpType, sdp);
-    if(sdpType == API::RTCSdpType::Offer){
-        api.CreateAnswer();
+    else
+    {
+        throw std::runtime_error("Only 1 instance of WebRTC_Handler is allowed!\n");
     }
-}
 
-void WebRTC_Handler::AddICECandidate(char *candidate, char *sdpMLineIndex, int sdpMid) {
-    std::string candidate_ = candidate;
-    std::string sdpMLineIndex_ = sdpMLineIndex;
-//TODO: Add remote description before adding ICE candidate
-    return;
-    AddICECandidateFunc = std::async([]( API* api, std::string candidate, std::string sdpMLineIndex, int sdpMid){
-        while (!StopAddICECandidateFunc) {
-            API::SignalingState state = api->GetSignallingState();
-            switch (state) {
-                case API::kHaveRemoteOffer:
-                    printf("kStable\n");
-                    api->AddICECandidate(const_cast<char *>(candidate.c_str()),
-                                         const_cast<char *>(sdpMLineIndex.c_str()), sdpMid);
-                    return;
-            }
-            sleep(1);
-        }
-    }, &api, candidate_, sdpMLineIndex_, sdpMid);
-}
+    signalling_handler.get()->StartSignalling();
 
+    PC.OnLocalDescription(
+        [](RTCSdpType sdpType, const char* sdp)
+        {
+            std::string sdp_str = sdp;
+            WebRTC_Handler::GetInstance()->OnGotLocalDescription(sdpType, sdp_str);
+        });
+}
+void WebRTC_Handler::StartWebRTCApp() { }
+
+WebRTC_Handler::~WebRTC_Handler() { signalling_handler.get()->StopSignalling(); }
+
+void WebRTC_Handler::StopWebRTCApp() { }
+
+void WebRTC_Handler::SetLocalDescription(webrtc::RTCSdpType sdpType, char* sdp) { }
+void WebRTC_Handler::SetRemoteDescription(RTCSessionDescription sdp) { PC.SetRemoteDescription(sdp); }
+
+void WebRTC_Handler::AddICECandidate(char* candidate, char* sdpMLineIndex, int sdpMid) { }

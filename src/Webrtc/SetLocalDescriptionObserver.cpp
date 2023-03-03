@@ -2,6 +2,7 @@
 
 namespace webrtc
 {
+DelegateSetLocalDesc SetLocalDescriptionObserver::s_setLocalDescCallback = nullptr;
 
 rtc::scoped_refptr<SetLocalDescriptionObserver>
 webrtc::SetLocalDescriptionObserver::Create(webrtc::PeerConnectionObject* connection)
