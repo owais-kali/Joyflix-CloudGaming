@@ -6,9 +6,9 @@
 #include "WebRTCPlugin.h"
 #include "Context.h"
 #include "CreateSessionDescriptionObserverX.h"
-#include "SetRemoteDescriptionObserver.h"
-#include "SetLocalDescriptionObserver.h"
 #include "Logger.h"
+#include "SetLocalDescriptionObserver.h"
+#include "SetRemoteDescriptionObserver.h"
 #include "api/jsep.h"
 
 namespace webrtc
@@ -94,9 +94,7 @@ bool WebRTCPlugin::MediaStreamRemoveTrack(MediaStreamInterface* stream, MediaStr
     }
 }
 
-char* WebRTCPlugin::MediaStreamGetID(MediaStreamInterface* stream) {
-    NOT_IMPLEMENTED("MediaStreamGetID");
-}
+char* WebRTCPlugin::MediaStreamGetID(MediaStreamInterface* stream) { NOT_IMPLEMENTED("MediaStreamGetID"); }
 
 void WebRTCPlugin::MediaStreamRegisterOnAddTrack(
     Context* context, MediaStreamInterface* stream, DelegateMediaStreamOnAddTrack callback)
@@ -378,14 +376,15 @@ RTCStatsMemberInterface::Type WebRTCPlugin::StatsMemberGetType(const RTCStatsMem
     return RTCStatsMemberInterface::kSequenceDouble;
 }
 
-SetLocalDescriptionObserver* WebRTCPlugin::PeerConnectionSetLocalDescription(
-    PeerConnectionObject* obj, const RTCSessionDescription* desc)
+SetLocalDescriptionObserver*
+WebRTCPlugin::PeerConnectionSetLocalDescription(PeerConnectionObject* obj, const RTCSessionDescription* desc)
 {
     std::string error_;
     auto observer = SetLocalDescriptionObserver::Create(obj);
     auto errorType = obj->SetLocalDescription(*desc, observer, error_);
 
-    if(errorType != RTCErrorType::NONE){
+    if (errorType != RTCErrorType::NONE)
+    {
         DebugError("PeerConnectionSetLocalDescription: %s", error_.c_str());
     }
 
@@ -398,13 +397,14 @@ SetLocalDescriptionObserver* WebRTCPlugin::PeerConnectionSetLocalDescriptionWith
     return nullptr;
 }
 
-SetRemoteDescriptionObserver* WebRTCPlugin::PeerConnectionSetRemoteDescription(
-    PeerConnectionObject* obj, const RTCSessionDescription* desc)
+SetRemoteDescriptionObserver*
+WebRTCPlugin::PeerConnectionSetRemoteDescription(PeerConnectionObject* obj, const RTCSessionDescription* desc)
 {
     std::string error_;
     auto observer = SetRemoteDescriptionObserver::Create(obj);
     auto errorType = obj->SetRemoteDescription(*desc, observer, error_);
-    if(errorType != RTCErrorType::NONE){
+    if (errorType != RTCErrorType::NONE)
+    {
         DebugError("PeerConnectionSetRemoteDescription: %s", error_.c_str());
     }
     return observer.get();
@@ -482,13 +482,18 @@ void WebRTCPlugin::PeerConnectionRegisterConnectionStateChange(
 
 void WebRTCPlugin::StatsCollectorRegisterCallback(DelegateCollectStats callback) { }
 
-void WebRTCPlugin::CreateSessionDescriptionObserverRegisterCallback(DelegateCreateSessionDesc callback) {
+void WebRTCPlugin::CreateSessionDescriptionObserverRegisterCallback(DelegateCreateSessionDesc callback)
+{
     CreateSessionDescriptionObserverX::RegisterCallback(callback);
+}
+
+void WebRTCPlugin::SetLocalDescriptionObserverRegisterCallback(DelegateSetLocalDesc callback)
+{
+    SetLocalDescriptionObserver::RegisterCallback(callback);
 }
 
 void WebRTCPlugin::SetRemoteDescriptionObserverRegisterCallback(DelegateSetRemoteDesc callback)
 {
     SetRemoteDescriptionObserver::RegisterCallback(callback);
 }
-
 }

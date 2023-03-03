@@ -1,6 +1,7 @@
 #include "Signalling_Handler.h"
 #include <functional>
 #include <nlohmann/json.hpp>
+#include "Webrtc/Types.h"
 
 using namespace nlohmann;
 

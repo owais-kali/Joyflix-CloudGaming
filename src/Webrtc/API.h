@@ -1,6 +1,4 @@
-
 #pragma once
-#include "Types.h"
 
 typedef unsigned int uint;
 
@@ -11,12 +9,18 @@ class WebRTCPlugin;
 class Context;
 class PeerConnectionObject;
 class CreateSessionDescriptionObserver;
+class SetLocalDescriptionObserver;
 class SetRemoteDescriptionObserver;
+
+struct RTCOfferAnswerOptions;
+struct RTCSessionDescription;
 
 enum class RTCSdpType;
 enum class RTCErrorType;
 
-using DelegateOnLocalDescription = void (*)(RTCSdpType, const char*, RTCErrorType, const char*);
+using DelegateOnLocalDescription = void (*)(RTCSdpType, const char*);
+
+using DelegateOnSetLocalDescription = void (*)(RTCErrorType, const char*);
 using DelegateOnSetRemoteDescription = void (*)(RTCErrorType, const char*);
 
 class RTCPeerConnection
@@ -24,6 +28,8 @@ class RTCPeerConnection
 private:
     PeerConnectionObject* pco;
     DelegateOnLocalDescription LocalDescriptionCallback;
+
+    DelegateOnSetLocalDescription SetLocalDescriptionCallback;
     DelegateOnSetRemoteDescription SetRemoteDescriptionCallback;
 public:
     enum class EventType
@@ -31,13 +37,12 @@ public:
 
     };
 
-    RTCPeerConnection();
-    RTCPeerConnection(const char* config);
+    explicit RTCPeerConnection();
     ~RTCPeerConnection();
 
     void CreateOffer(const RTCOfferAnswerOptions& options);
     void CreateAnswer(const RTCOfferAnswerOptions& options);
-    void OnLocalDescription(DelegateOnLocalDescription callback);
+    void OnLocalDescription(DelegateOnLocalDescription callback){ LocalDescriptionCallback = callback; };
 
     void SetLocalDescription(const RTCSessionDescription sdp);
     void SetRemoteDescription(const RTCSessionDescription sdp);
@@ -50,6 +55,9 @@ public:
         RTCErrorType errorType,
         const char* errorMsg);
 
+    friend void OnSetLocalDescriptionObserverCallback(
+        PeerConnectionObject* pco, SetLocalDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg);
+
     friend void OnSetRemoteDescriptionObserverCallback(
         PeerConnectionObject* pco, SetRemoteDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg);
 };
@@ -61,6 +69,9 @@ void OnSessionDescriptionObserverCallback(
     const char* desc,
     RTCErrorType errorType,
     const char* errorMsg);
+
+void OnSetLocalDescriptionObserverCallback(
+    PeerConnectionObject* pco, SetLocalDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg);
 
 void OnSetRemoteDescriptionObserverCallback(
     PeerConnectionObject* pco, SetRemoteDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg);

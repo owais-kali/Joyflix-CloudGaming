@@ -51,6 +51,15 @@ RTCErrorType PeerConnectionObject::SetLocalDescription(
     rtc::scoped_refptr<SetLocalDescriptionObserverInterface> observer,
     std::string& error)
 {
+    SdpParseError error_;
+    std::unique_ptr<SessionDescriptionInterface> _desc =
+        CreateSessionDescription(ConvertSdpType(desc.type), desc.sdp, &error_);
+    if (!_desc)
+    {
+        error = error_.description;
+        return RTCErrorType::SYNTAX_ERROR;
+    }
+    connection->SetLocalDescription(std::move(_desc), observer);
     return RTCErrorType::NONE;
 }
 RTCErrorType PeerConnectionObject::SetLocalDescriptionWithoutDescription(
@@ -58,11 +67,24 @@ RTCErrorType PeerConnectionObject::SetLocalDescriptionWithoutDescription(
 {
     return RTCErrorType::NONE;
 }
+
 RTCErrorType PeerConnectionObject::SetRemoteDescription(
-    const RTCSessionDescription& desc, rtc::scoped_refptr<SetRemoteDescriptionObserverInterface>, std::string& error)
+    const RTCSessionDescription& desc,
+    rtc::scoped_refptr<SetRemoteDescriptionObserverInterface> observer,
+    std::string& error)
 {
+    SdpParseError error_;
+    std::unique_ptr<SessionDescriptionInterface> _desc =
+        CreateSessionDescription(ConvertSdpType(desc.type), desc.sdp, &error_);
+    if (!_desc)
+    {
+        error = error_.description;
+        return RTCErrorType::SYNTAX_ERROR;
+    }
+    connection->SetRemoteDescription(std::move(_desc), observer);
     return RTCErrorType::NONE;
 }
+
 bool PeerConnectionObject::GetSessionDescription(
     const SessionDescriptionInterface* sdp, RTCSessionDescription& desc) const
 {
@@ -80,6 +102,10 @@ void PeerConnectionObject::CreateOffer(const RTCOfferAnswerOptions& options, Cre
 void PeerConnectionObject::CreateAnswer(
     const RTCOfferAnswerOptions& options, CreateSessionDescriptionObserver* observer)
 {
+    webrtc::PeerConnectionInterface::RTCOfferAnswerOptions _options;
+    _options.ice_restart = options.iceRestart;
+    _options.voice_activity_detection = options.voiceActivityDetection;
+    connection->CreateAnswer(observer, _options);
 }
 void PeerConnectionObject::ReceiveStatsReport(const rtc::scoped_refptr<const RTCStatsReport>& report) { }
 void PeerConnectionObject::OnSignalingChange(PeerConnectionInterface::SignalingState new_state) { }

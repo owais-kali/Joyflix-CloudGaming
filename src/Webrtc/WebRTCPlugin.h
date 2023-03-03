@@ -33,6 +33,9 @@ using DelegateCollectStats =
 using DelegateCreateSessionDesc = void (*)(
     PeerConnectionObject*, CreateSessionDescriptionObserver*, RTCSdpType, const char*, RTCErrorType, const char*);
 
+using DelegateSetLocalDesc =
+    void (*)(PeerConnectionObject*, SetLocalDescriptionObserver*, RTCErrorType, const char*);
+
 using DelegateSetRemoteDesc =
     void (*)(PeerConnectionObject*, SetRemoteDescriptionObserver*, RTCErrorType, const char*);
 
@@ -431,6 +434,7 @@ public:
 
     void StatsCollectorRegisterCallback(DelegateCollectStats callback);
     void CreateSessionDescriptionObserverRegisterCallback(DelegateCreateSessionDesc callback);
+    void SetLocalDescriptionObserverRegisterCallback(DelegateSetLocalDesc callback);
     void SetRemoteDescriptionObserverRegisterCallback(DelegateSetRemoteDesc callback);
 
     webrtc::PeerConnectionInterface::SignalingState PeerConnectionSignalingState(PeerConnectionObject* obj);

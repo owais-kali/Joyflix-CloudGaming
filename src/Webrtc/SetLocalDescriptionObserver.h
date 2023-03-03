@@ -8,7 +8,6 @@
 namespace webrtc
 {
 class SetLocalDescriptionObserver;
-using DelegateSetLocalDesc = void (*)(PeerConnectionObject*, SetLocalDescriptionObserver*, RTCErrorType, const char*);
 
 class SetLocalDescriptionObserver : public ::webrtc::SetLocalDescriptionObserverInterface
 {

@@ -1,6 +1,7 @@
 #include "API.h"
 #include "Context.h"
 #include "Logger.h"
+#include "Types.h"
 #include "WebRTCPlugin.h"
 #include "map"
 
@@ -22,11 +23,25 @@ void OnSessionDescriptionObserverCallback(
     auto callback = PCOs[pco]->LocalDescriptionCallback;
     if (callback != nullptr)
     {
-        callback(rtcSdpType, desc, errorType, errorMsg);
+        callback(rtcSdpType, desc);
     }
     else
     {
-        DebugError("SDP Created but OnLocalDescription callback is not set");
+        DebugError("SDP Created but OnGotLocalDescription callback is not set");
+    }
+}
+
+void OnSetLocalDescriptionObserverCallback(
+    PeerConnectionObject* pco, SetLocalDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg)
+{
+    auto callback = PCOs[pco]->SetLocalDescriptionCallback;
+    if (callback != nullptr)
+    {
+        callback(errorType, errorMsg);
+    }
+    else
+    {
+        DebugError("LocalDescription is Set but OnSetLocalDescription callback is not set");
     }
 }
 
@@ -49,7 +64,6 @@ RTCPeerConnection::RTCPeerConnection()
     pco = plugin->ContextCreatePeerConnection(current_context);
     PCOs[pco] = this;
 }
-RTCPeerConnection::RTCPeerConnection(const char* config) { }
 
 RTCPeerConnection::~RTCPeerConnection()
 {
@@ -66,13 +80,13 @@ void RTCPeerConnection::CreateAnswer(const RTCOfferAnswerOptions& options)
     plugin->PeerConnectionCreateAnswer(current_context, pco, &options);
 }
 
-void RTCPeerConnection::OnLocalDescription(DelegateOnLocalDescription callback) { LocalDescriptionCallback = callback; }
-
-void RTCPeerConnection::SetLocalDescription(const RTCSessionDescription sdp) {
+void RTCPeerConnection::SetLocalDescription(const RTCSessionDescription sdp)
+{
     plugin->PeerConnectionSetLocalDescription(pco, &sdp);
 }
 
-void RTCPeerConnection::SetRemoteDescription(const RTCSessionDescription sdp) {
+void RTCPeerConnection::SetRemoteDescription(const RTCSessionDescription sdp)
+{
     plugin->PeerConnectionSetRemoteDescription(pco, &sdp);
 }
 
@@ -94,8 +108,9 @@ API::API()
     api = this;
     plugin = new WebRTCPlugin;
 
-    //Register Callbacks
+    // Register Callbacks
     plugin->CreateSessionDescriptionObserverRegisterCallback(OnSessionDescriptionObserverCallback);
+    plugin->SetLocalDescriptionObserverRegisterCallback(OnSetLocalDescriptionObserverCallback);
     plugin->SetRemoteDescriptionObserverRegisterCallback(OnSetRemoteDescriptionObserverCallback);
 
     current_context = plugin->ContextCreate(0);
