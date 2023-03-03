@@ -1,54 +1,69 @@
+#include "Signalling_Handler.h"
 #include <functional>
 #include <nlohmann/json.hpp>
-#include "Signalling_Handler.h"
 
 using namespace nlohmann;
 
-Signalling_Handler::Signalling_Handler(int port, Signalling_Handler::DelegateOnGotDescription onGotDescriptionCallback,
-                                       Signalling_Handler::DelegateOnICECandidate onIceCandidateCallback)
-        : Port(port),
-          onGotDescriptionDelegate(onGotDescriptionCallback), onICECandidateDelegate(onIceCandidateCallback),
-          signalling(std::bind(&Signalling_Handler::OnMessage, this, std::placeholders::_1)) {}
+Signalling_Handler::Signalling_Handler(
+    int port,
+    Signalling_Handler::DelegateOnGotDescription onGotDescriptionCallback,
+    Signalling_Handler::DelegateOnICECandidate onIceCandidateCallback)
+    : Port(port)
+    , onGotDescriptionDelegate(onGotDescriptionCallback)
+    , onICECandidateDelegate(onIceCandidateCallback)
+    , signalling(std::bind(&Signalling_Handler::OnMessage, this, std::placeholders::_1))
+{
+}
 
-Signalling_Handler::~Signalling_Handler() {
-    if (signalling_started) {
+Signalling_Handler::~Signalling_Handler()
+{
+    if (signalling_started)
+    {
         StopSignalling();
     }
 }
 
-void Signalling_Handler::StartSignalling() {
+void Signalling_Handler::StartSignalling()
+{
     signalling.StartServer(Port);
     signalling_started = true;
 }
 
-void Signalling_Handler::StopSignalling() {
+void Signalling_Handler::StopSignalling()
+{
     signalling_started = false;
     signalling.StopServer();
 }
 
-void Signalling_Handler::OnMessage(std::string msg) {
+void Signalling_Handler::OnMessage(std::string msg)
+{
     printf("OnMessage\n%s\n", msg.c_str());
     json data = json::parse(msg);
     std::string type = data["type"].get<std::string>();
 
-    if (type == "offer") {
+    if (type == "offer")
+    {
         std::string sdp = data["data"]["sdp"].get<std::string>();
-        onGotDescriptionDelegate(webrtc::API::RTCSdpType::Offer, sdp);
+        onGotDescriptionDelegate(webrtc::RTCSdpType::Offer, sdp);
         return;
     }
-    if (type == "candidate") {
+    if (type == "candidate")
+    {
         std::string candidate = data["data"]["candidate"].get<std::string>();
         std::string sdpMLineIndex = data["data"]["sdpMLineIndex"].get<std::string>();
         int sdpMid = data["data"]["sdpMid"].get<int>();
-        onICECandidateDelegate(candidate, sdpMLineIndex, sdpMid);
+        if (onICECandidateDelegate)
+            onICECandidateDelegate(candidate, sdpMLineIndex, sdpMid);
         return;
     }
 }
 
-void Signalling_Handler::SendSDP(webrtc::API::RTCSdpType type, std::string desc) {
-    switch (type) {
-        case webrtc::API::RTCSdpType::Answer:
-            json data = json::parse(R"(
+void Signalling_Handler::SendSDP(webrtc::RTCSdpType type, std::string desc)
+{
+    switch (type)
+    {
+    case webrtc::RTCSdpType::Answer:
+        json data = json::parse(R"(
                 {
                   "data": {
                     "connectionId": "server",
@@ -58,15 +73,16 @@ void Signalling_Handler::SendSDP(webrtc::API::RTCSdpType type, std::string desc)
                   "type": "answer"
                 }
             )");
-            data["data"]["sdp"] = desc;
-            printf("SendSDP: \n%s\n", data.dump().c_str());
+        data["data"]["sdp"] = desc;
+        printf("SendSDP: \n%s\n", data.dump().c_str());
 
-            signalling.SendMessage(data.dump());
-            break;
+        signalling.SendMessage(data.dump());
+        break;
     }
 }
 
-void Signalling_Handler::SendICE(char* candidate, char* sdpMlineIndex, int sdpMid){
+void Signalling_Handler::SendICE(char* candidate, char* sdpMlineIndex, int sdpMid)
+{
     json data = json::parse(R"(
                 {
                   "type": "candidate",
@@ -86,4 +102,3 @@ void Signalling_Handler::SendICE(char* candidate, char* sdpMlineIndex, int sdpMi
 
     signalling.SendMessage(data.dump());
 }
-

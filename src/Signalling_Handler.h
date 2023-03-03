@@ -4,8 +4,9 @@
 
 class Signalling_Handler {
 public:
-    using DelegateOnGotDescription = void (*)(webrtc::API::RTCSdpType, std::string);
-    using DelegateOnICECandidate = void (*)(std::string, std::string, int);
+    typedef std::function<void (webrtc::RTCSdpType, std::string)> DelegateOnGotDescription;
+    typedef std::function<void (std::string, std::string, int)> DelegateOnICECandidate;
+
 private:
     bool signalling_started;
     Signalling signalling;
@@ -21,7 +22,7 @@ public:
     void StartSignalling();
     void StopSignalling();
 
-    void SendSDP(webrtc::API::RTCSdpType type ,std::string desc);
+    void SendSDP(webrtc::RTCSdpType type ,std::string desc);
     void SendICE(char* candidate, char* sdpMid, int sdpMlineIndex);
 };
 

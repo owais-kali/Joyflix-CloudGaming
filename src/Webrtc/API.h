@@ -67,13 +67,6 @@ void OnSetRemoteDescriptionObserverCallback(
 class API
 {
 public:
-    enum class RTCSdpType
-    {
-        Offer,
-        PrAnswer,
-        Answer,
-        Rollback
-    };
     enum SignalingState
     {
         kStable,
