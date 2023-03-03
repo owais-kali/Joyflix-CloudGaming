@@ -34,7 +34,7 @@ Signalling_Handler *signalling_handler;
 
 void OnGotRemoteDescription(webrtc::API::RTCSdpType type, std::string offer) {
     std::cout << "Got Remote Description: " << std::endl;
-    webRtcHandler->SetRemoteDescription(webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
+//    webRtcHandler->SetRemoteDescription(webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
 }
 
 void OnGotLocalDescription(webrtc::API::RTCSdpType type, char *desc) {

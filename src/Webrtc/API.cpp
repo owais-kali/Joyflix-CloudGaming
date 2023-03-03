@@ -1,9 +1,8 @@
-#include "_API.h"
+#include "API.h"
 #include "Context.h"
 #include "Logger.h"
 #include "WebRTCPlugin.h"
 #include "map"
-#include "future"
 
 namespace webrtc
 {
@@ -14,18 +13,34 @@ static std::map<PeerConnectionObject*, RTCPeerConnection*> PCOs;
 
 void OnSessionDescriptionObserverCallback(
     PeerConnectionObject* pco,
-    CreateSessionDescriptionObserver* csdo,
+    CreateSessionDescriptionObserver* observer,
     RTCSdpType rtcSdpType,
     const char* desc,
     RTCErrorType errorType,
     const char* errorMsg)
 {
     auto callback = PCOs[pco]->LocalDescriptionCallback;
-    if(callback != nullptr){
+    if (callback != nullptr)
+    {
         callback(rtcSdpType, desc, errorType, errorMsg);
     }
-    else{
+    else
+    {
         DebugError("SDP Created but OnLocalDescription callback is not set");
+    }
+}
+
+void OnSetRemoteDescriptionObserverCallback(
+    PeerConnectionObject* pco, SetRemoteDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg)
+{
+    auto callback = PCOs[pco]->SetRemoteDescriptionCallback;
+    if (callback != nullptr)
+    {
+        callback(errorType, errorMsg);
+    }
+    else
+    {
+        DebugError("RemoteDescription is Set but OnSetRemoteDescription callback is not set");
     }
 }
 
@@ -42,23 +57,18 @@ RTCPeerConnection::~RTCPeerConnection()
     PCOs.erase(pco);
 }
 
-void RTCPeerConnection::CreateOffer(const RTCOfferAnswerOptions& options) {
-    webrtc::RTCOfferAnswerOptions Options = {
-        options.iceRestart,
-        options.voiceActivityDetection
-    };
-    plugin->PeerConnectionCreateOffer(current_context, pco, &Options);
+void RTCPeerConnection::CreateOffer(const RTCOfferAnswerOptions& options)
+{
+    plugin->PeerConnectionCreateOffer(current_context, pco, &options);
 }
-void RTCPeerConnection::CreateAnswer(const RTCOfferAnswerOptions& options) {
-    webrtc::RTCOfferAnswerOptions Options = {
-        options.iceRestart,
-        options.voiceActivityDetection
-    };
+void RTCPeerConnection::CreateAnswer(const RTCOfferAnswerOptions& options)
+{
     plugin->PeerConnectionCreateAnswer(current_context, pco, &options);
 }
 
-void RTCPeerConnection::OnLocalDescription(DelegateOnLocalDescription callback) {
-    LocalDescriptionCallback = callback;
+void RTCPeerConnection::OnLocalDescription(DelegateOnLocalDescription callback) { LocalDescriptionCallback = callback; }
+void RTCPeerConnection::SetRemoteDescription(const RTCSessionDescription sdp) {
+    plugin->PeerConnectionSetRemoteDescription(pco, &sdp);
 }
 
 API::API()
@@ -78,7 +88,11 @@ API::API()
 
     api = this;
     plugin = new WebRTCPlugin;
+
+    //Register Callbacks
     plugin->CreateSessionDescriptionObserverRegisterCallback(OnSessionDescriptionObserverCallback);
+    plugin->SetRemoteDescriptionObserverRegisterCallback(OnSetRemoteDescriptionObserverCallback);
+
     current_context = plugin->ContextCreate(0);
 }
 
@@ -101,25 +115,6 @@ void API::ContextDestroy(uint ID)
     plugin->ContextDestroy(0);
     DebugLog("Context Destroyed!");
 }
-
-void API::SetLocalDescription(API::RTCSdpType type, char* sdp)
-{
-    switch (type)
-    {
-    case RTCSdpType::Offer:
-        RTCSessionDescription desc = { webrtc::RTCSdpType::Offer, sdp };
-        char** error;
-        RTCErrorType errorType;
-
-        if (errorType != RTCErrorType::NONE)
-        {
-            DebugLog("%s", error);
-        }
-        break;
-    }
-}
-
-void API::SetRemoteDescription(API::RTCSdpType type, char* sdp) { }
 
 void API::AddICECandidate(char* candidate, char* sdpMLineIndex, int sdpMid) { }
 

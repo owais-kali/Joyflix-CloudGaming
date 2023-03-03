@@ -21,6 +21,7 @@ target_sources(WebRTC
         VideoFrame.cpp
         VideoFrameX.h
         Size.h
+        Types.h
         Logger.cpp
         Logger.h
         Context.cpp

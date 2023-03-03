@@ -4,6 +4,7 @@
 
 #include "Context.h"
 #include "PeerConnectionObject.h"
+#include "Types.h"
 
 namespace webrtc
 {

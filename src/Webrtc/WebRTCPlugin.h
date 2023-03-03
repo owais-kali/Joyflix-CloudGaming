@@ -33,19 +33,10 @@ using DelegateCollectStats =
 using DelegateCreateSessionDesc = void (*)(
     PeerConnectionObject*, CreateSessionDescriptionObserver*, RTCSdpType, const char*, RTCErrorType, const char*);
 
-enum class RTCSdpType
-{
-    Offer,
-    PrAnswer,
-    Answer,
-    Rollback
-};
+using DelegateSetRemoteDesc =
+    void (*)(PeerConnectionObject*, SetRemoteDescriptionObserver*, RTCErrorType, const char*);
 
-struct RTCSessionDescription
-{
-    RTCSdpType type;
-    const char* sdp;
-};
+struct RTCSessionDescription;
 
 enum class RTCPeerConnectionState
 {
@@ -105,11 +96,7 @@ enum class TrackKind
     Video
 };
 
-struct RTCOfferAnswerOptions
-{
-    bool iceRestart;
-    bool voiceActivityDetection;
-};
+struct RTCOfferAnswerOptions;
 
 struct RTCIceServer
 {
@@ -139,43 +126,6 @@ struct RTCIceCandidateInit
     char* candidate;
     char* sdpMid;
     int32_t sdpMLineIndex;
-};
-
-char* ConvertString(const std::string str);
-
-struct Candidate
-{
-    char* candidate;
-    int32_t component;
-    char* foundation;
-    char* ip;
-    uint16_t port;
-    uint32_t priority;
-    char* address;
-    char* protocol;
-    char* relatedAddress;
-    uint16_t relatedPort;
-    char* tcpType;
-    char* type;
-    char* usernameFragment;
-
-    Candidate& operator=(const cricket::Candidate& obj)
-    {
-        candidate = ConvertString(obj.ToString());
-        component = obj.component();
-        foundation = ConvertString(obj.foundation());
-        ip = ConvertString(obj.address().ipaddr().ToString());
-        port = obj.address().port();
-        priority = obj.priority();
-        address = ConvertString(obj.address().ToString());
-        protocol = ConvertString(obj.protocol());
-        relatedAddress = ConvertString(obj.related_address().ToString());
-        relatedPort = obj.related_address().port();
-        tcpType = ConvertString(obj.tcptype());
-        type = ConvertString(obj.type());
-        usernameFragment = ConvertString(obj.username());
-        return *this;
-    }
 };
 
 template<typename T>
@@ -254,7 +204,7 @@ struct RTCRtpEncodingParameters
     Optional<uint64_t> minBitrate;
     Optional<uint32_t> maxFramerate;
     Optional<double> scaleResolutionDownBy;
-    char* rid;
+    std::string rid;
 
     RTCRtpEncodingParameters& operator=(const RtpEncodingParameters& obj)
     {
@@ -263,7 +213,7 @@ struct RTCRtpEncodingParameters
         minBitrate = obj.min_bitrate_bps;
         maxFramerate = obj.max_framerate;
         scaleResolutionDownBy = obj.scale_resolution_down_by;
-        rid = ConvertString(obj.rid);
+        rid = obj.rid;
         return *this;
     }
 
@@ -275,8 +225,8 @@ struct RTCRtpEncodingParameters
         dst.min_bitrate_bps = static_cast<absl::optional<int>>(ConvertOptional(minBitrate));
         dst.max_framerate = static_cast<absl::optional<double>>(ConvertOptional(maxFramerate));
         dst.scale_resolution_down_by = ConvertOptional(scaleResolutionDownBy);
-        if (rid != nullptr)
-            dst.rid = std::string(rid);
+        if (rid != "")
+            dst.rid = rid;
         return dst;
     }
 };
@@ -452,7 +402,7 @@ public:
         PeerConnectionObject* obj, RTCErrorType* errorType, char* error[]);
 
     SetRemoteDescriptionObserver* PeerConnectionSetRemoteDescription(
-        PeerConnectionObject* obj, const RTCSessionDescription* desc, RTCErrorType* errorType, char* error[]);
+        PeerConnectionObject* obj, const RTCSessionDescription* desc);
 
     bool PeerConnectionGetLocalDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
     bool PeerConnectionGetRemoteDescription(PeerConnectionObject* obj, RTCSessionDescription* desc);
@@ -481,6 +431,7 @@ public:
 
     void StatsCollectorRegisterCallback(DelegateCollectStats callback);
     void CreateSessionDescriptionObserverRegisterCallback(DelegateCreateSessionDesc callback);
+    void SetRemoteDescriptionObserverRegisterCallback(DelegateSetRemoteDesc callback);
 
     webrtc::PeerConnectionInterface::SignalingState PeerConnectionSignalingState(PeerConnectionObject* obj);
 

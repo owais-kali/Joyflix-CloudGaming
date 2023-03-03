@@ -1,5 +1,7 @@
 
 #pragma once
+#include "Types.h"
+
 typedef unsigned int uint;
 
 namespace webrtc
@@ -9,22 +11,20 @@ class WebRTCPlugin;
 class Context;
 class PeerConnectionObject;
 class CreateSessionDescriptionObserver;
+class SetRemoteDescriptionObserver;
+
 enum class RTCSdpType;
 enum class RTCErrorType;
 
-struct RTCOfferAnswerOptions
-{
-    bool iceRestart;
-    bool voiceActivityDetection;
-};
-
 using DelegateOnLocalDescription = void (*)(RTCSdpType, const char*, RTCErrorType, const char*);
+using DelegateOnSetRemoteDescription = void (*)(RTCErrorType, const char*);
 
 class RTCPeerConnection
 {
 private:
     PeerConnectionObject* pco;
     DelegateOnLocalDescription LocalDescriptionCallback;
+    DelegateOnSetRemoteDescription SetRemoteDescriptionCallback;
 public:
     enum class EventType
     {
@@ -39,22 +39,30 @@ public:
     void CreateAnswer(const RTCOfferAnswerOptions& options);
     void OnLocalDescription(DelegateOnLocalDescription callback);
 
+    void SetRemoteDescription(const RTCSessionDescription sdp);
+
     friend void OnSessionDescriptionObserverCallback(
         PeerConnectionObject* pco,
-        CreateSessionDescriptionObserver* csdo,
+        CreateSessionDescriptionObserver* observer,
         RTCSdpType rtcSdpType,
         const char* desc,
         RTCErrorType errorType,
         const char* errorMsg);
+
+    friend void OnSetRemoteDescriptionObserverCallback(
+        PeerConnectionObject* pco, SetRemoteDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg);
 };
 
 void OnSessionDescriptionObserverCallback(
     PeerConnectionObject* pco,
-    CreateSessionDescriptionObserver* csdo,
+    CreateSessionDescriptionObserver* observer,
     RTCSdpType rtcSdpType,
     const char* desc,
     RTCErrorType errorType,
     const char* errorMsg);
+
+void OnSetRemoteDescriptionObserverCallback(
+    PeerConnectionObject* pco, SetRemoteDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg);
 
 class API
 {
@@ -82,10 +90,6 @@ public:
     void ContextCreate(uint ID);
     void SetCurrentContext(uint ID);
     void ContextDestroy(uint ID);
-
-    void SetLocalDescription(RTCSdpType type, char* sdp);
-
-    void SetRemoteDescription(RTCSdpType type, char* sdp);
 
     void AddICECandidate(char* candidate, char* sdpMLineIndex, int sdpMid);
 

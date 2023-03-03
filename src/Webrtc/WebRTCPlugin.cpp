@@ -6,6 +6,8 @@
 #include "WebRTCPlugin.h"
 #include "Context.h"
 #include "CreateSessionDescriptionObserverX.h"
+#include "SetRemoteDescriptionObserver.h"
+#include "SetLocalDescriptionObserver.h"
 #include "Logger.h"
 #include "api/jsep.h"
 
@@ -92,7 +94,9 @@ bool WebRTCPlugin::MediaStreamRemoveTrack(MediaStreamInterface* stream, MediaStr
     }
 }
 
-char* WebRTCPlugin::MediaStreamGetID(MediaStreamInterface* stream) { return ConvertString(stream->id()); }
+char* WebRTCPlugin::MediaStreamGetID(MediaStreamInterface* stream) {
+    NOT_IMPLEMENTED("MediaStreamGetID");
+}
 
 void WebRTCPlugin::MediaStreamRegisterOnAddTrack(
     Context* context, MediaStreamInterface* stream, DelegateMediaStreamOnAddTrack callback)
@@ -387,9 +391,15 @@ SetLocalDescriptionObserver* WebRTCPlugin::PeerConnectionSetLocalDescriptionWith
 }
 
 SetRemoteDescriptionObserver* WebRTCPlugin::PeerConnectionSetRemoteDescription(
-    PeerConnectionObject* obj, const RTCSessionDescription* desc, RTCErrorType* errorType, char** error)
+    PeerConnectionObject* obj, const RTCSessionDescription* desc)
 {
-    return nullptr;
+    std::string error_;
+    auto observer = SetRemoteDescriptionObserver::Create(obj);
+    auto errorType = obj->SetRemoteDescription(*desc, observer, error_);
+    if(errorType != RTCErrorType::NONE){
+        DebugError("PeerConnectionSetRemoteDescription: %s", error_.c_str());
+    }
+    return observer.get();
 }
 
 bool WebRTCPlugin::PeerConnectionGetLocalDescription(PeerConnectionObject* obj, RTCSessionDescription* desc)
@@ -468,13 +478,9 @@ void WebRTCPlugin::CreateSessionDescriptionObserverRegisterCallback(DelegateCrea
     CreateSessionDescriptionObserverX::RegisterCallback(callback);
 }
 
-char* ConvertString(const std::string str)
+void WebRTCPlugin::SetRemoteDescriptionObserverRegisterCallback(DelegateSetRemoteDesc callback)
 {
-    const size_t size = str.size();
-    char* ret = static_cast<char*>(CoTaskMemAlloc(size + sizeof(char)));
-    str.copy(ret, size);
-    ret[size] = '\0';
-    return ret;
+    SetRemoteDescriptionObserver::RegisterCallback(callback);
 }
 
 }
