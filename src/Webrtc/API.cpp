@@ -67,6 +67,11 @@ void RTCPeerConnection::CreateAnswer(const RTCOfferAnswerOptions& options)
 }
 
 void RTCPeerConnection::OnLocalDescription(DelegateOnLocalDescription callback) { LocalDescriptionCallback = callback; }
+
+void RTCPeerConnection::SetLocalDescription(const RTCSessionDescription sdp) {
+    plugin->PeerConnectionSetLocalDescription(pco, &sdp);
+}
+
 void RTCPeerConnection::SetRemoteDescription(const RTCSessionDescription sdp) {
     plugin->PeerConnectionSetRemoteDescription(pco, &sdp);
 }

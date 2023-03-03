@@ -396,7 +396,7 @@ public:
     RTCStatsMemberInterface::Type StatsMemberGetType(const RTCStatsMemberInterface* member);
 
     SetLocalDescriptionObserver* PeerConnectionSetLocalDescription(
-        PeerConnectionObject* obj, const RTCSessionDescription* desc, RTCErrorType* errorType, char* error[]);
+        PeerConnectionObject* obj, const RTCSessionDescription* desc);
 
     SetLocalDescriptionObserver* PeerConnectionSetLocalDescriptionWithoutDescription(
         PeerConnectionObject* obj, RTCErrorType* errorType, char* error[]);

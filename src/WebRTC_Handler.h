@@ -14,7 +14,6 @@ private:
 
     void OnGotRemoteDescription(webrtc::RTCSdpType type, std::string sdp);
     void OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid);
-
 public:
     WebRTC_Handler();
     ~WebRTC_Handler();

@@ -39,6 +39,7 @@ public:
     void CreateAnswer(const RTCOfferAnswerOptions& options);
     void OnLocalDescription(DelegateOnLocalDescription callback);
 
+    void SetLocalDescription(const RTCSessionDescription sdp);
     void SetRemoteDescription(const RTCSessionDescription sdp);
 
     friend void OnSessionDescriptionObserverCallback(

@@ -379,9 +379,17 @@ RTCStatsMemberInterface::Type WebRTCPlugin::StatsMemberGetType(const RTCStatsMem
 }
 
 SetLocalDescriptionObserver* WebRTCPlugin::PeerConnectionSetLocalDescription(
-    PeerConnectionObject* obj, const RTCSessionDescription* desc, RTCErrorType* errorType, char** error)
+    PeerConnectionObject* obj, const RTCSessionDescription* desc)
 {
-    return nullptr;
+    std::string error_;
+    auto observer = SetLocalDescriptionObserver::Create(obj);
+    auto errorType = obj->SetLocalDescription(*desc, observer, error_);
+
+    if(errorType != RTCErrorType::NONE){
+        DebugError("PeerConnectionSetLocalDescription: %s", error_.c_str());
+    }
+
+    return observer.get();
 }
 
 SetLocalDescriptionObserver* WebRTCPlugin::PeerConnectionSetLocalDescriptionWithoutDescription(
