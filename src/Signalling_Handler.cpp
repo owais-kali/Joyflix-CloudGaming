@@ -75,8 +75,6 @@ void Signalling_Handler::SendSDP(webrtc::RTCSdpType type, std::string desc)
                 }
             )");
         data["data"]["sdp"] = desc;
-        printf("SendSDP: \n%s\n", data.dump().c_str());
-
         signalling.SendMessage(data.dump());
         break;
     }

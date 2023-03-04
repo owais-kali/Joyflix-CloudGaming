@@ -12,9 +12,10 @@ void WebRTC_Handler::OnGotRemoteDescription(webrtc::RTCSdpType type, std::string
     PC.CreateAnswer({ true, true });
 }
 
-void WebRTC_Handler::OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid)
+void WebRTC_Handler::OnGotRemoteIceCandidate(std::string candidate, std::string sdpMLineIndex, int sdpMid)
 {
-    printf("Got Remote ICE %s\n", ice.c_str());
+    PC.AddIceCandidate(const_cast<char*>(candidate.c_str()), const_cast<char*>(sdpMLineIndex.c_str()), sdpMid);
+    printf("Got Remote ICE %s\n", candidate.c_str());
 }
 
 void WebRTC_Handler::OnGotLocalDescription(RTCSdpType sdpType, std::string sdp)

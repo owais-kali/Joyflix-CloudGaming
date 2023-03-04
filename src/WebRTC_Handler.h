@@ -16,7 +16,7 @@ private:
     RTCPeerConnection PC;
 
     void OnGotRemoteDescription(webrtc::RTCSdpType type, std::string sdp);
-    void OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid);
+    void OnGotRemoteIceCandidate(std::string candidate, std::string sdpMLineIndex, int sdpMid);
     void OnGotLocalDescription(RTCSdpType sdpType, std::string sdp);
 
 public:
