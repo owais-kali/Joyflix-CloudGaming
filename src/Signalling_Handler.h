@@ -6,12 +6,11 @@ namespace webrtc
 enum class RTCSdpType;
 }
 
+using DelegateOnGotDescription = void (*)(webrtc::RTCSdpType, std::string);
+using DelegateOnICECandidate = void (*)(std::string , std::string, int);
+
 class Signalling_Handler
 {
-public:
-    typedef std::function<void(webrtc::RTCSdpType, std::string)> DelegateOnGotDescription;
-    typedef std::function<void(std::string, std::string, int)> DelegateOnICECandidate;
-
 private:
     bool signalling_started;
     Signalling signalling;

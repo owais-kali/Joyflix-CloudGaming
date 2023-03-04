@@ -12,12 +12,6 @@ void WebRTC_Handler::OnGotRemoteDescription(webrtc::RTCSdpType type, std::string
     PC.CreateAnswer({ true, true });
 }
 
-void WebRTC_Handler::OnGotRemoteIceCandidate(std::string candidate, std::string sdpMLineIndex, int sdpMid)
-{
-    PC.AddIceCandidate(const_cast<char*>(candidate.c_str()), const_cast<char*>(sdpMLineIndex.c_str()), sdpMid);
-    printf("Got Remote ICE %s\n", candidate.c_str());
-}
-
 void WebRTC_Handler::OnGotLocalDescription(RTCSdpType sdpType, std::string sdp)
 {
     PC.SetLocalDescription({ sdpType, sdp.c_str() });
@@ -25,17 +19,22 @@ void WebRTC_Handler::OnGotLocalDescription(RTCSdpType sdpType, std::string sdp)
     printf("Got Local SDP %s\n", sdp.c_str());
 }
 
+void WebRTC_Handler::OnGotRemoteIceCandidate(std::string candidate, std::string sdpMLineIndex, int sdpMid)
+{
+    PC.AddIceCandidate(const_cast<char*>(candidate.c_str()), const_cast<char*>(sdpMLineIndex.c_str()), sdpMid);
+    printf("Got Remote ICE %s\n", candidate.c_str());
+}
+
 WebRTC_Handler::WebRTC_Handler()
     : signalling_port(3001)
     , signalling_handler(std::make_unique<Signalling_Handler>(
           signalling_port,
-          std::bind(&WebRTC_Handler::OnGotRemoteDescription, this, std::placeholders::_1, std::placeholders::_2),
-          std::bind(
-              &WebRTC_Handler::OnGotRemoteIceCandidate,
-              this,
-              std::placeholders::_1,
-              std::placeholders::_2,
-              std::placeholders::_3)))
+          //OnGotDescriptionCallback
+          [](webrtc::RTCSdpType sdpType, std::string sdp)
+          { WebRTC_Handler::GetInstance()->OnGotRemoteDescription(sdpType, sdp); },
+          // OnIceCandidateCallback
+          [](std::string candidate, std::string sdpMLineIndex, int sdpMid)
+          { WebRTC_Handler::GetInstance()->OnGotRemoteIceCandidate(candidate, sdpMLineIndex, sdpMid); }))
 {
     if (s_instance == nullptr)
     {

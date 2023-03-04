@@ -343,10 +343,12 @@ WebRTCPlugin::PeerConnectionAddIceCandidate(PeerConnectionObject* obj, char* can
         DebugError("Can't parse received candidate message. SdpParseError was: %s", error.description.c_str());
         return RTCErrorType::INVALID_PARAMETER;
     }
-//    if (!obj->connection->AddIceCandidate(_candidate.get()))
-//    {
-//        DebugError("Failed to apply the received candidate: %s", error.description.c_str());
-//    }
+    if (!obj->connection->AddIceCandidate(_candidate.get()))
+    {
+        DebugError("Failed to apply the received candidate: %s", error.description.c_str());
+        return RTCErrorType::UNSUPPORTED_OPERATION;
+    }
+    return RTCErrorType::NONE;
 }
 
 double* WebRTCPlugin::StatsMemberGetDoubleArray(const RTCStatsMemberInterface* member, size_t* length)

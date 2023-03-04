@@ -7,8 +7,8 @@ using namespace nlohmann;
 
 Signalling_Handler::Signalling_Handler(
     int port,
-    Signalling_Handler::DelegateOnGotDescription onGotDescriptionCallback,
-    Signalling_Handler::DelegateOnICECandidate onIceCandidateCallback)
+    DelegateOnGotDescription onGotDescriptionCallback,
+    DelegateOnICECandidate onIceCandidateCallback)
     : Port(port)
     , onGotDescriptionDelegate(onGotDescriptionCallback)
     , onICECandidateDelegate(onIceCandidateCallback)

@@ -72,6 +72,7 @@ void sigterm_callback(int signum) { stop = 1; }
 int main(int argc, char* argv[])
 {
     signal(SIGTERM, sigterm_callback);
+    signal(-1, sigterm_callback);
 
     webRtcHandler = new WebRTC_Handler;
     webRtcHandler->StartWebRTCApp();
