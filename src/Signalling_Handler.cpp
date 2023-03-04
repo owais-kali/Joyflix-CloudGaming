@@ -14,6 +14,7 @@ Signalling_Handler::Signalling_Handler(
     , onICECandidateDelegate(onIceCandidateCallback)
     , signalling(std::bind(&Signalling_Handler::OnMessage, this, std::placeholders::_1))
 {
+
 }
 
 Signalling_Handler::~Signalling_Handler()
@@ -22,6 +23,13 @@ Signalling_Handler::~Signalling_Handler()
     {
         StopSignalling();
     }
+}
+
+void Signalling_Handler::RegisterOnConnectCallback(Signalling::DelegateOnConnect callback) {
+    signalling.RegisterOnConnectCallback(callback);
+}
+void Signalling_Handler::RegisterOnDisconnectCallback(Signalling::DelegateOnDisconnect callback) {
+    signalling.RegisterOnDisconnectCallback(callback);
 }
 
 void Signalling_Handler::StartSignalling()
@@ -100,3 +108,4 @@ void Signalling_Handler::SendICE(char* candidate, char* sdpMid, int sdpMlineInde
 
     signalling.SendMessage(data.dump());
 }
+

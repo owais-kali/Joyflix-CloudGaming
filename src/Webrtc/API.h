@@ -28,10 +28,10 @@ class RTCPeerConnection
 {
 private:
     PeerConnectionObject* pco;
-    DelegateOnLocalDescription LocalDescriptionCallback;
+    DelegateOnLocalDescription LocalDescriptionCallback = nullptr;
 
-    DelegateOnSetLocalDescription SetLocalDescriptionCallback;
-    DelegateOnSetRemoteDescription SetRemoteDescriptionCallback;
+    DelegateOnSetLocalDescription SetLocalDescriptionCallback = nullptr;
+    DelegateOnSetRemoteDescription SetRemoteDescriptionCallback = nullptr;
 
 public:
     enum class EventType

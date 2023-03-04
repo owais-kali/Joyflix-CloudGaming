@@ -6,21 +6,29 @@ Signalling::Signalling(Signalling::DelegateOnMessage onMessageCallback)
 {
 }
 
+void Signalling::RegisterOnConnectCallback(Signalling::DelegateOnConnect callback) {
+    onConnectDelegate = callback;
+}
+void Signalling::RegisterOnDisconnectCallback(Signalling::DelegateOnDisconnect callback) {
+    onDisconnectDelegate = callback;
+}
+
 void Signalling::OnConnect(server* s, websocketpp::connection_hdl hdl){
     if(IsClientConnected){
         server::connection_ptr con = signalling_server.get_con_from_hdl(client_connection_hdl);
         con->close(websocketpp::close::status::blank, "Client Already Connected");
         return;
     }
-    std::cout << "on connect " << std::endl;
     client_connection_hdl = hdl;
     client_connection_ptr = signalling_server.get_con_from_hdl(client_connection_hdl);
     IsClientConnected = true;
+    if(onConnectDelegate!= nullptr) onConnectDelegate();
 }
 
 void Signalling::OnDisconnect(server* s, websocketpp::connection_hdl hdl){
     std::cout << "on disconnect " << std::endl;
     IsClientConnected = false;
+    if(onDisconnectDelegate != nullptr) onDisconnectDelegate();
 }
 
 // Define a callback to handle incoming messages
@@ -76,3 +84,5 @@ void Signalling::SendMessage(std::string msg){
         return;
     client_connection_ptr->send(msg, websocketpp::frame::opcode::text);
 }
+
+

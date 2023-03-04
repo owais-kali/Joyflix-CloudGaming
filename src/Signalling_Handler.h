@@ -24,6 +24,10 @@ public:
     Signalling_Handler(
         int port, DelegateOnGotDescription onGotDescriptionCallback, DelegateOnICECandidate onIceCandidateCallback);
     ~Signalling_Handler();
+
+    void RegisterOnConnectCallback(Signalling::DelegateOnConnect callback);
+    void RegisterOnDisconnectCallback(Signalling::DelegateOnDisconnect callback);
+
     void StartSignalling();
     void StopSignalling();
 

@@ -32,38 +32,6 @@ void StartVulkanApp()
 }
 
 WebRTC_Handler* webRtcHandler;
-Signalling_Handler* signalling_handler;
-
-void OnGotRemoteDescription(webrtc::RTCSdpType type, std::string offer)
-{
-    std::cout << "Got Remote Description: " << std::endl;
-    //    webRtcHandler->SetRemoteDescription(webrtc::API::RTCSdpType::Offer, const_cast<char *>(offer.c_str()));
-}
-
-void OnGotLocalDescription(webrtc::RTCSdpType type, char* desc)
-{
-    std::cout << "Got Local Description: " << std::endl;
-    signalling_handler->SendSDP(type, desc);
-    webRtcHandler->SetLocalDescription(type, desc);
-}
-
-void OnGotLocalIceCandidate(char* candidate, char* sdpMLineIndex, int sdpMid)
-{
-    std::cout << "Got Local ICE: " << std::endl;
-    signalling_handler->SendICE(candidate, sdpMLineIndex, sdpMid);
-}
-
-void OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid)
-{
-    webRtcHandler->AddICECandidate((char*)ice.c_str(), (char*)sdpMLineIndex.c_str(), sdpMid);
-    std::cout << "Add Remote ICE: " << ice << std::endl;
-}
-
-void StopSignallingServer()
-{
-    signalling_handler->StopSignalling();
-    delete signalling_handler;
-}
 
 volatile sig_atomic_t stop;
 

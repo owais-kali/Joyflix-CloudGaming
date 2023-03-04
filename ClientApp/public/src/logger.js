@@ -1,4 +1,4 @@
-let isDebug = false;
+let isDebug = true;
 
 export function enable() {
   isDebug = true;
