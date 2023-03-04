@@ -16,8 +16,10 @@ private:
     RTCPeerConnection PC;
 
     void OnGotRemoteDescription(webrtc::RTCSdpType type, std::string sdp);
-    void OnGotRemoteIceCandidate(std::string candidate, std::string sdpMLineIndex, int sdpMid);
     void OnGotLocalDescription(RTCSdpType sdpType, std::string sdp);
+
+    void OnGotRemoteIceCandidate(std::string candidate, std::string sdpMid, int sdpMLineIndex);
+    void OnGotLocalIceCandidate(std::string candidate, std::string sdpMid, int sdpMLineIndex);
 
 public:
     static WebRTC_Handler* GetInstance();

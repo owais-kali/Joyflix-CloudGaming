@@ -19,17 +19,22 @@ void WebRTC_Handler::OnGotLocalDescription(RTCSdpType sdpType, std::string sdp)
     printf("Got Local SDP %s\n", sdp.c_str());
 }
 
-void WebRTC_Handler::OnGotRemoteIceCandidate(std::string candidate, std::string sdpMLineIndex, int sdpMid)
+void WebRTC_Handler::OnGotRemoteIceCandidate(std::string candidate, std::string sdpMid, int sdpMLineIndex)
 {
-    PC.AddIceCandidate(const_cast<char*>(candidate.c_str()), const_cast<char*>(sdpMLineIndex.c_str()), sdpMid);
+    PC.AddIceCandidate(const_cast<char*>(candidate.c_str()), const_cast<char*>(sdpMid.c_str()), sdpMLineIndex);
     printf("Got Remote ICE %s\n", candidate.c_str());
+}
+
+void WebRTC_Handler::OnGotLocalIceCandidate(std::string candidate, std::string sdpMid, int sdpMLineIndex) {
+    signalling_handler->SendICE(const_cast<char*>(candidate.c_str()), const_cast<char*>(sdpMid.c_str()), sdpMLineIndex);
+    printf("Got Local ICE %s\n", candidate.c_str());
 }
 
 WebRTC_Handler::WebRTC_Handler()
     : signalling_port(3001)
     , signalling_handler(std::make_unique<Signalling_Handler>(
           signalling_port,
-          //OnGotDescriptionCallback
+          // OnGotDescriptionCallback
           [](webrtc::RTCSdpType sdpType, std::string sdp)
           { WebRTC_Handler::GetInstance()->OnGotRemoteDescription(sdpType, sdp); },
           // OnIceCandidateCallback
@@ -52,6 +57,10 @@ WebRTC_Handler::WebRTC_Handler()
         {
             std::string sdp_str = sdp;
             WebRTC_Handler::GetInstance()->OnGotLocalDescription(sdpType, sdp_str);
+        });
+    PC.OnIceCandidate(
+        [](PeerConnectionObject* pco, const char* candidate, const char* sdpMid, const int sdpMLineIndex) {
+            WebRTC_Handler::GetInstance()->OnGotLocalIceCandidate(candidate, sdpMid, sdpMLineIndex);
         });
 }
 void WebRTC_Handler::StartWebRTCApp() { }

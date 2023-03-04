@@ -13,4 +13,6 @@ webrtc::DataChannelObject::~DataChannelObject() { }
 
 void webrtc::DataChannelObject::OnStateChange() { }
 
-void webrtc::DataChannelObject::OnMessage(const webrtc::DataBuffer& buffer) { }
+void webrtc::DataChannelObject::OnMessage(const webrtc::DataBuffer& buffer) {
+    printf("DataChannel: Got message: \n");
+}

@@ -38,7 +38,6 @@ void Signalling_Handler::StopSignalling()
 
 void Signalling_Handler::OnMessage(std::string msg)
 {
-    printf("OnMessage\n%s\n", msg.c_str());
     json data = json::parse(msg);
     std::string type = data["type"].get<std::string>();
 
@@ -80,7 +79,7 @@ void Signalling_Handler::SendSDP(webrtc::RTCSdpType type, std::string desc)
     }
 }
 
-void Signalling_Handler::SendICE(char* candidate, char* sdpMlineIndex, int sdpMid)
+void Signalling_Handler::SendICE(char* candidate, char* sdpMid, int sdpMlineIndex)
 {
     json data = json::parse(R"(
                 {
@@ -88,15 +87,15 @@ void Signalling_Handler::SendICE(char* candidate, char* sdpMlineIndex, int sdpMi
                   "from": "9dc9690c-183f-404a-bb7e-3e57f5a59566",
                   "data": {
                     "candidate": "",
-                    "sdpMLineIndex": "",
-                    "sdpMid": 0,
+                    "sdpMid": "",
+                    "sdpMLineIndex": 0,
                     "connectionId": "9dc9690c-183f-404a-bb7e-3e57f5a59566"
                   }
                 }
             )");
     data["data"]["candidate"] = candidate;
-    data["data"]["sdpMlineIndex"] = sdpMlineIndex;
     data["data"]["sdpMid"] = sdpMid;
+    data["data"]["sdpMLineIndex"] = sdpMlineIndex;
     printf("SendICE: \n%s\n", data.dump().c_str());
 
     signalling.SendMessage(data.dump());

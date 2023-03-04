@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include <rtc_base/strings/json.h>
-
+#include "Logger.h"
 #include "Context.h"
 #include "PeerConnectionObject.h"
 #include "Types.h"
@@ -128,7 +128,18 @@ void PeerConnectionObject::OnConnectionChange(PeerConnectionInterface::PeerConne
     PeerConnectionObserver::OnConnectionChange(new_state);
 }
 void PeerConnectionObject::OnIceGatheringChange(PeerConnectionInterface::IceGatheringState new_state) { }
-void PeerConnectionObject::OnIceCandidate(const IceCandidateInterface* candidate) { }
+void PeerConnectionObject::OnIceCandidate(const IceCandidateInterface* candidate) {
+    std::string out;
+
+    if (!candidate->ToString(&out))
+    {
+        DebugError("Can't make string form of sdp.");
+    }
+    if (onIceCandidate != nullptr)
+    {
+        onIceCandidate(this, out.c_str(), candidate->sdp_mid().c_str(), candidate->sdp_mline_index());
+    }
+}
 void PeerConnectionObject::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> transceiver)
 {
     PeerConnectionObserver::OnTrack(transceiver);
