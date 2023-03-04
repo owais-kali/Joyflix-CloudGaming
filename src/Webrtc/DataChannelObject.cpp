@@ -3,16 +3,43 @@
 //
 
 #include "DataChannelObject.h"
+#include "Logger.h"
 
 webrtc::DataChannelObject::DataChannelObject(
     rtc::scoped_refptr<DataChannelInterface> channel, webrtc::PeerConnectionObject& pc)
+    : dataChannel(channel)
 {
+    dataChannel->RegisterObserver(this);
+    DebugLog("DataChannelObject Created!\n");
 }
 
-webrtc::DataChannelObject::~DataChannelObject() { }
+webrtc::DataChannelObject::~DataChannelObject() {
+    dataChannel->UnregisterObserver();
+    DebugLog("DataChannelObject Destroyed!\n");
+}
 
-void webrtc::DataChannelObject::OnStateChange() { }
+void webrtc::DataChannelObject::OnStateChange() {
+    auto state = dataChannel->state();
+    switch (state)
+    {
+    case webrtc::DataChannelInterface::kOpen:
+        if (onOpen != nullptr)
+        {
+            onOpen(this->dataChannel.get());
+        }
+        break;
+    case webrtc::DataChannelInterface::kClosed:
+        if (onClose != nullptr)
+        {
+            onClose(this->dataChannel.get());
+        }
+        break;
+    case webrtc::DataChannelInterface::kConnecting:
+    case webrtc::DataChannelInterface::kClosing:
+        break;
+    }
+}
 
 void webrtc::DataChannelObject::OnMessage(const webrtc::DataBuffer& buffer) {
-    printf("DataChannel: Got message: \n");
+    DebugLog("DataChannel: Got message:\n");
 }
