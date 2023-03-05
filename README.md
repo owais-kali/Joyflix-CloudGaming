@@ -1,4 +1,4 @@
-# JOYFLIX: Open-source Cloud Gaming Service
+# JOYFLIX: A Stadia Clone
 
 ![Logo](https://raw.githubusercontent.com/joyflix99/Joyflix-CloudGaming/main/Logo.png)
 
@@ -8,7 +8,7 @@
 ![Architecture](https://raw.githubusercontent.com/joyflix99/Joyflix-CloudGaming/a16237d2730549d3112416a3057476715f069927/Joyflix%20Engine.drawio.png)
 
 ## Introduction
-Joyflix provides a cloud gaming platform to run Windows OS games on linux server completely headless (ie: no X11 server is needed) using [Wine](https://www.winehq.org/).
+Joyflix provides a cloud gaming platform to render games on server and stream it to client browser just like google stadia.
 
 In cloud gaming, games are run on remote servers and media are streamed to the player optimally to ensure
 the most comfortable user interaction. It opens the ability to play any  games on web-browser directly, which are
