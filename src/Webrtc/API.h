@@ -22,15 +22,17 @@ using DelegateOnLocalDescription = void (*)(RTCSdpType, const char*);
 
 using DelegateOnSetLocalDescription = void (*)(RTCErrorType, const char*);
 using DelegateOnSetRemoteDescription = void (*)(RTCErrorType, const char*);
+using DelegateOnIceCandidate = void (*)(PeerConnectionObject* ,const char* candidate, const char* sdpMid, const int sdpMLineIndex);
 
 class RTCPeerConnection
 {
 private:
     PeerConnectionObject* pco;
-    DelegateOnLocalDescription LocalDescriptionCallback;
+    DelegateOnLocalDescription LocalDescriptionCallback = nullptr;
 
-    DelegateOnSetLocalDescription SetLocalDescriptionCallback;
-    DelegateOnSetRemoteDescription SetRemoteDescriptionCallback;
+    DelegateOnSetLocalDescription SetLocalDescriptionCallback = nullptr;
+    DelegateOnSetRemoteDescription SetRemoteDescriptionCallback = nullptr;
+
 public:
     enum class EventType
     {
@@ -42,10 +44,13 @@ public:
 
     void CreateOffer(const RTCOfferAnswerOptions& options);
     void CreateAnswer(const RTCOfferAnswerOptions& options);
-    void OnLocalDescription(DelegateOnLocalDescription callback){ LocalDescriptionCallback = callback; };
+    void OnLocalDescription(DelegateOnLocalDescription callback) { LocalDescriptionCallback = callback; };
 
     void SetLocalDescription(const RTCSessionDescription sdp);
     void SetRemoteDescription(const RTCSessionDescription sdp);
+
+    void OnIceCandidate(DelegateOnIceCandidate callback);
+    void AddIceCandidate(char* candidate, char* sdpMLineIndex, int sdpMid);
 
     friend void OnSessionDescriptionObserverCallback(
         PeerConnectionObject* pco,
@@ -59,7 +64,10 @@ public:
         PeerConnectionObject* pco, SetLocalDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg);
 
     friend void OnSetRemoteDescriptionObserverCallback(
-        PeerConnectionObject* pco, SetRemoteDescriptionObserver* observer, RTCErrorType errorType, const char* errorMsg);
+        PeerConnectionObject* pco,
+        SetRemoteDescriptionObserver* observer,
+        RTCErrorType errorType,
+        const char* errorMsg);
 };
 
 void OnSessionDescriptionObserverCallback(

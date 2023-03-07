@@ -341,12 +341,14 @@ WebRTCPlugin::PeerConnectionAddIceCandidate(PeerConnectionObject* obj, char* can
     if (!_candidate.get())
     {
         DebugError("Can't parse received candidate message. SdpParseError was: %s", error.description.c_str());
-        return RTCErrorType::INTERNAL_ERROR;
+        return RTCErrorType::INVALID_PARAMETER;
     }
     if (!obj->connection->AddIceCandidate(_candidate.get()))
     {
         DebugError("Failed to apply the received candidate: %s", error.description.c_str());
+        return RTCErrorType::UNSUPPORTED_OPERATION;
     }
+    return RTCErrorType::NONE;
 }
 
 double* WebRTCPlugin::StatsMemberGetDoubleArray(const RTCStatsMemberInterface* member, size_t* length)
@@ -460,7 +462,15 @@ WebRTCPlugin::PeerConnectionGetTransceivers(Context* context, PeerConnectionObje
 DataChannelInterface* WebRTCPlugin::ContextCreateDataChannel(
     Context* ctx, PeerConnectionObject* obj, const char* label, const RTCDataChannelInit* options)
 {
-    return nullptr;
+    DataChannelInit _options;
+    _options.ordered = options->ordered.value_or(true);
+    _options.maxRetransmitTime = static_cast<absl::optional<int32_t>>(options->maxRetransmitTime);
+    _options.maxRetransmits = static_cast<absl::optional<int32_t>>(options->maxRetransmits);
+    _options.protocol = options->protocol == nullptr ? "" : options->protocol;
+    _options.negotiated = options->negotiated.value_or(false);
+    _options.id = options->id.value_or(-1);
+
+    return ctx->CreateDataChannel(obj, label, _options);
 }
 
 void WebRTCPlugin::ContextDeleteDataChannel(Context* ctx, DataChannelInterface* channel) { }

@@ -1,10 +1,10 @@
 #include "pch.h"
 
-#include <rtc_base/strings/json.h>
-
 #include "Context.h"
+#include "Logger.h"
 #include "PeerConnectionObject.h"
 #include "Types.h"
+#include <rtc_base/strings/json.h>
 
 namespace webrtc
 {
@@ -117,7 +117,14 @@ void PeerConnectionObject::OnRemoveStream(rtc::scoped_refptr<MediaStreamInterfac
 {
     PeerConnectionObserver::OnRemoveStream(stream);
 }
-void PeerConnectionObject::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> data_channel) { }
+void PeerConnectionObject::OnDataChannel(rtc::scoped_refptr<DataChannelInterface> channel)
+{
+    context.AddDataChannel(channel, *this);
+    if (onDataChannel != nullptr)
+    {
+        onDataChannel(this, channel.get());
+    }
+}
 void PeerConnectionObject::OnRenegotiationNeeded() { PeerConnectionObserver::OnRenegotiationNeeded(); }
 void PeerConnectionObject::OnIceConnectionChange(PeerConnectionInterface::IceConnectionState new_state)
 {
@@ -128,7 +135,19 @@ void PeerConnectionObject::OnConnectionChange(PeerConnectionInterface::PeerConne
     PeerConnectionObserver::OnConnectionChange(new_state);
 }
 void PeerConnectionObject::OnIceGatheringChange(PeerConnectionInterface::IceGatheringState new_state) { }
-void PeerConnectionObject::OnIceCandidate(const IceCandidateInterface* candidate) { }
+void PeerConnectionObject::OnIceCandidate(const IceCandidateInterface* candidate)
+{
+    std::string out;
+
+    if (!candidate->ToString(&out))
+    {
+        DebugError("Can't make string form of sdp.");
+    }
+    if (onIceCandidate != nullptr)
+    {
+        onIceCandidate(this, out.c_str(), candidate->sdp_mid().c_str(), candidate->sdp_mline_index());
+    }
+}
 void PeerConnectionObject::OnTrack(rtc::scoped_refptr<RtpTransceiverInterface> transceiver)
 {
     PeerConnectionObserver::OnTrack(transceiver);

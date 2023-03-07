@@ -273,7 +273,7 @@ using DelegateCreateSDSuccess = void (*)(API*, PeerConnectionObject*, RTCSdpType
 
 using DelegateCreateSDFailure = void (*)(PeerConnectionObject*, webrtc::RTCErrorType, const char*);
 using DelegateLocalSdpReady = void (*)(PeerConnectionObject*, const char*, const char*);
-using DelegateIceCandidate = void (*)(API*, PeerConnectionObject*, const char*, const char*, const int);
+using DelegateIceCandidate = void (*)(PeerConnectionObject*, const char*, const char*, const int);
 using DelegateOnIceConnectionChange =
     void (*)(PeerConnectionObject*, webrtc::PeerConnectionInterface::IceConnectionState);
 using DelegateOnIceGatheringChange =

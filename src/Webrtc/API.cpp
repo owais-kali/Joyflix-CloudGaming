@@ -90,6 +90,14 @@ void RTCPeerConnection::SetRemoteDescription(const RTCSessionDescription sdp)
     plugin->PeerConnectionSetRemoteDescription(pco, &sdp);
 }
 
+void RTCPeerConnection::OnIceCandidate(DelegateOnIceCandidate callback) {
+    plugin->PeerConnectionRegisterOnIceCandidate(pco, callback);
+}
+
+void RTCPeerConnection::AddIceCandidate(char* candidate, char* sdpMLineIndex, int sdpMid) {
+    plugin->PeerConnectionAddIceCandidate(pco, candidate, sdpMLineIndex, sdpMid);
+}
+
 API::API()
 {
     if (api != nullptr)

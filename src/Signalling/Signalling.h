@@ -10,11 +10,15 @@ using websocketpp::lib::bind;
 class Signalling {
 public:
     typedef std::function<void (std::string)> DelegateOnMessage;
+    typedef std::function<void ()> DelegateOnConnect;
+    typedef std::function<void ()> DelegateOnDisconnect;
 private:
     typedef websocketpp::server<websocketpp::config::asio> server;
     // pull out the type of messages sent by our config
     typedef server::message_ptr message_ptr;
     DelegateOnMessage onMessageDelegate;
+    DelegateOnConnect onConnectDelegate;
+    DelegateOnDisconnect onDisconnectDelegate;
 
     // Create a server endpoint
     server signalling_server;
@@ -30,6 +34,8 @@ private:
     void OnMessage(server* s, websocketpp::connection_hdl hdl, message_ptr msg);
 public:
     Signalling(DelegateOnMessage onMessageCallback);
+    void RegisterOnConnectCallback(DelegateOnConnect callback);
+    void RegisterOnDisconnectCallback(DelegateOnDisconnect callback);
     void StartServer(int port);
     void SendMessage(std::string msg);
     void StopServer();

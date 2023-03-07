@@ -130,10 +130,6 @@ export default class Peer extends EventTarget {
   }
 
   async onGotDescription(connectionId, description) {
-    if (this.connectionId != connectionId) {
-      return;
-    }
-
     const _this = this;
     const isStable =
       this.pc.signalingState == 'stable' ||
@@ -173,10 +169,6 @@ export default class Peer extends EventTarget {
   }
 
   async onGotCandidate(connectionId, candidate) {
-    if (this.connectionId != connectionId) {
-      return;
-    }
-
     try {
       await this.pc.addIceCandidate(candidate);
     } catch (e) {

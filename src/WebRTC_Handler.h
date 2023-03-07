@@ -13,11 +13,16 @@ private:
     std::unique_ptr<Signalling_Handler> signalling_handler;
 
     API api;
-    RTCPeerConnection PC;
+    std::unique_ptr<RTCPeerConnection> PC;
+
+    void OnClientConnect();
+    void OnClientDisConnect();
 
     void OnGotRemoteDescription(webrtc::RTCSdpType type, std::string sdp);
-    void OnGotRemoteIceCandidate(std::string ice, std::string sdpMLineIndex, int sdpMid);
     void OnGotLocalDescription(RTCSdpType sdpType, std::string sdp);
+
+    void OnGotRemoteIceCandidate(std::string candidate, std::string sdpMid, int sdpMLineIndex);
+    void OnGotLocalIceCandidate(std::string candidate, std::string sdpMid, int sdpMLineIndex);
 
 public:
     static WebRTC_Handler* GetInstance();
@@ -26,7 +31,4 @@ public:
     ~WebRTC_Handler();
     void StartWebRTCApp();
     void StopWebRTCApp();
-    void SetLocalDescription(webrtc::RTCSdpType sdpType, char* sdp);
-    void SetRemoteDescription(RTCSessionDescription sdp);
-    void AddICECandidate(char* candidate, char* sdpMLineIndex, int sdpMid);
 };
