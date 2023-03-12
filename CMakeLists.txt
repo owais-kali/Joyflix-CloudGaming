@@ -7,7 +7,10 @@ project(
 
 cmake_policy(SET CMP0076 NEW)
 
-if(NOT DEFINED WEBRTC_SRC)
+option(WEBRTC_DISBALE "Disable WebRTC to speed up project loading for development" ON)
+option(WEBRTC_SRC "Set WEBRTC_SRC path by -DWEBRTC_SRC eg: -DWEBRTC_SRC=Webrtc_Source_Code/webrtc-checkout/src")
+
+if(NOT WEBRTC_SRC)
     message( SEND_ERROR "Set WEBRTC_SRC path by -DWEBRTC_SRC eg: -DWEBRTC_SRC=Webrtc_Source_Code/webrtc-checkout/src" )
 endif()
 

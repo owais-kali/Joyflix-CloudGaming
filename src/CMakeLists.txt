@@ -15,7 +15,11 @@ add_subdirectory(Signalling)
 add_executable(VCNW)
 add_subdirectory(Vulkan)
 add_subdirectory(Cuda)
-add_subdirectory(Webrtc)
+
+if (${WEBRTC_DISABLE})
+    add_subdirectory(Webrtc)
+endif ()
+add_subdirectory(Obs-Studio)
 
 target_sources(VCNW
         PRIVATE
@@ -39,4 +43,4 @@ target_link_libraries(VCNW
 target_link_options(VCNW
         PUBLIC
         -lX11
-)
+        )
