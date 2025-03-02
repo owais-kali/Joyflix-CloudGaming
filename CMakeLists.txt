@@ -7,21 +7,33 @@ project(
 
 cmake_policy(SET CMP0076 NEW)
 
-if(NOT DEFINED WEBRTC_SRC)
-    message( SEND_ERROR "Set WEBRTC_SRC path by -DWEBRTC_SRC eg: -DWEBRTC_SRC=Webrtc_Source_Code/webrtc-checkout/src" )
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(Linux)
+    set(CMAKE_CXX_FLAG "${CMAKE_CXX_FLAG} -static-libstdc++")
+    add_link_options(-static-libstdc++ -fuse-ld=lld-11)
 endif()
 
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(WEBRTC_BUILD ${WEBRTC_SRC}/out/Debug)
-    add_compile_definitions(_DEBUG)
-else()
-    set(WEBRTC_BUILD ${WEBRTC_SRC}/out/Release)
-endif()
+# if(NOT DEFINED WEBRTC_SRC)
+#     message( SEND_ERROR "Set WEBRTC_SRC path by -DWEBRTC_SRC eg: -DWEBRTC_SRC=Webrtc_Source_Code/webrtc-checkout/src" )
+# endif()
 
-find_package(nlohmann_json 3.2.0 REQUIRED)
-find_package(WEBSOCKETPP REQUIRED)
+# if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+#     set(WEBRTC_BUILD ${WEBRTC_SRC}/out/Debug)
+#     add_compile_definitions(_DEBUG)
+# else()
+#     set(WEBRTC_BUILD ${WEBRTC_SRC}/out/Release)
+# endif()
+
+# find_package(nlohmann_json 3.2.0 REQUIRED)
+# find_package(WEBSOCKETPP REQUIRED)
 find_package(CUDA REQUIRED)
 find_package(Vulkan REQUIRED)
 
 add_subdirectory(NvCodec)
 add_subdirectory(src)
+# add_subdirectory(Tests)

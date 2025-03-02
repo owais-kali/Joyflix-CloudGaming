@@ -1,10 +1,8 @@
 #include "WebRTCPlugin.h"
 #include "pch.h"
 
-#if is_debug
 #define _DEBUG true
 #include <cstdarg>
-#endif
 
 namespace webrtc
 {

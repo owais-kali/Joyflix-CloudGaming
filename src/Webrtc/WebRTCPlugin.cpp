@@ -336,8 +336,9 @@ RTCErrorType
 WebRTCPlugin::PeerConnectionAddIceCandidate(PeerConnectionObject* obj, char* candidate, char* sdpMLineIndex, int sdpMid)
 {
     SdpParseError error;
-    std::unique_ptr<webrtc::IceCandidateInterface> _candidate(
-        CreateIceCandidate(sdpMLineIndex, sdpMid, candidate, &error));
+    std::unique_ptr<webrtc::IceCandidateInterface> _candidate;
+//        (
+//        CreateIceCandidate(sdpMLineIndex, sdpMid, candidate, &error));
     if (!_candidate.get())
     {
         DebugError("Can't parse received candidate message. SdpParseError was: %s", error.description.c_str());

@@ -1,4 +1,4 @@
-set(CMAKE_CXX_COMPILER ${WEBRTC_SRC}/third_party/llvm-build/Release+Asserts/bin/clang)
+
 
 #JSON_CPP
 file(GLOB_RECURSE JSON_CPP_OBJS
@@ -46,14 +46,19 @@ target_sources(WebRTC
 
 target_include_directories(WebRTC SYSTEM PRIVATE .)
 
-target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC})
-target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/buildtools/third_party/libc++/trunk/include)
-target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/third_party/perfetto/buildtools/libcxx_config)
-target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/third_party/abseil-cpp/)
-target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/third_party/jsoncpp/source/include/)
+#target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC})
+#target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/buildtools/third_party/libc++/trunk/include)
+#target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/third_party/perfetto/buildtools/libcxx_config)
+#target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/third_party/abseil-cpp/)
+#target_include_directories(WebRTC SYSTEM PRIVATE ${WEBRTC_SRC}/third_party/jsoncpp/source/include/)
+
+target_include_directories(WebRTC PRIVATE
+        ${WEBRTC_SRC}
+        ${WEBRTC_SRC}third_party/abseil-cpp
+        ${WEBRTC_SRC}third_party/jsoncpp/source/include/)
 
 target_link_libraries(WebRTC
         PRIVATE
-        ${WEBRTC_BUILD}/obj/libwebrtc.a
-        ${JSON_CPP_OBJS}
+        ${WEBRTC_SRC}/out/Release/obj/libwebrtc.a
+#        ${JSON_CPP_OBJS}
         )

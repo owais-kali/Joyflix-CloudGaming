@@ -1,7 +1,7 @@
 #include "Cuda/CudaContext.h"
-#include "Signalling_Handler.h"
+// #include "Signalling_Handler.h"
 #include "Vulkan/VulkanBase.h"
-#include "WebRTC_Handler.h"
+// #include "WebRTC_Handler.h"
 #include "iostream"
 #include "stdio.h"
 #include <chrono>
@@ -9,7 +9,7 @@
 #include <thread>
 
 #include "VulkanApp.h"
-#include "Webrtc/API.h"
+// #include "Webrtc/API.h"
 
 #define USE_STAGING true
 
@@ -31,7 +31,7 @@ void StartVulkanApp()
     vulkanApp->renderLoop();
 }
 
-WebRTC_Handler* webRtcHandler;
+// WebRTC_Handler* webRtcHandler;
 
 volatile sig_atomic_t stop;
 
@@ -42,19 +42,20 @@ int main(int argc, char* argv[])
     signal(SIGTERM, sigterm_callback);
     signal(-1, sigterm_callback);
 
-    webRtcHandler = new WebRTC_Handler;
-    webRtcHandler->StartWebRTCApp();
+    // webRtcHandler = new WebRTC_Handler;
+    // webRtcHandler->StartWebRTCApp();
 
-    while (!stop);
+    // while (!stop);
 
-    webRtcHandler->StopWebRTCApp();
-    delete webRtcHandler;
+    // webRtcHandler->StopWebRTCApp();
+    // delete webRtcHandler;
 
-    return EXIT_SUCCESS;
+    // return EXIT_SUCCESS;
     for (size_t i = 0; i < argc; i++)
     {
         VulkanApp::args.push_back(argv[i]);
     };
+    
     StartCudaApp();
     StartVulkanApp();
 

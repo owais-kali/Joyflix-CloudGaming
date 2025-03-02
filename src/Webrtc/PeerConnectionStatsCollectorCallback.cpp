@@ -15,7 +15,7 @@ void webrtc::PeerConnectionStatsCollectorCallback::OnStatsDelivered(
     const rtc::scoped_refptr<const RTCStatsReport>& report)
 {
     m_owner->ReceiveStatsReport(report);
-    s_collectStatsCallback(m_owner, this, report.get());
+//    s_collectStatsCallback(m_owner, this, report.get());
 }
 
 }

@@ -11,30 +11,32 @@ file(GLOB_RECURSE WEBRTC_HEADER
         ${WEBRTC_SRC}/*.h
         )
 
-add_subdirectory(Signalling)
+# add_subdirectory(Signalling)
 add_executable(VCNW)
 add_subdirectory(Vulkan)
 add_subdirectory(Cuda)
-add_subdirectory(Webrtc)
+# add_subdirectory(Webrtc)
 
 target_sources(VCNW
         PRIVATE
         pch.cpp
         pch.h
-        WebRTC_Handler.cpp
-        WebRTC_Handler.h
-        Signalling_Handler.cpp
-        Signalling_Handler.h
+        # WebRTC_Handler.cpp
+        # WebRTC_Handler.h
+        # Signalling_Handler.cpp
+        # Signalling_Handler.h
         VulkanApp.cpp
         main.cpp)
 
 target_link_libraries(VCNW
+        # ${WEBRTC_BUILD}/obj/libwebrtc.a
         VulkanBase
         CUDA_LIB
-        WebRTC
-        Signalling
-        ${LibCPP_OBJS}
-        ${LibCPP_ABI_OBJS})
+        # WebRTC
+        # Signalling
+        # ${LibCPP_OBJS}
+        # ${LibCPP_ABI_OBJS}
+        )
 
 target_link_options(VCNW
         PUBLIC

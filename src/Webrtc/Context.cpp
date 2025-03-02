@@ -103,15 +103,15 @@ bool Convert(const std::string& str, webrtc::PeerConnectionInterface::RTCConfigu
         webrtc::PeerConnectionInterface::IceServer iceServer;
         for (auto url : iceServerJson["urls"])
         {
-            iceServer.urls.push_back(url.asString());
+//            iceServer.urls.push_back(url.asString());
         }
         if (!iceServerJson["username"].isNull())
         {
-            iceServer.username = iceServerJson["username"].asString();
+//            iceServer.username = iceServerJson["username"].asString();
         }
         if (!iceServerJson["credential"].isNull())
         {
-            iceServer.password = iceServerJson["credential"].asString();
+//            iceServer.password = iceServerJson["credential"].asString();
         }
         config.servers.push_back(iceServer);
     }
@@ -140,22 +140,24 @@ Context::Context(ContextDependencies& dependencies)
     , m_signalingThread(rtc::Thread::CreateWithSocketServer())
     , m_taskQueueFactory(CreateDefaultTaskQueueFactory())
 {
-    m_workerThread->Start();
-    m_signalingThread->Start();
+//    m_workerThread->Start();
+//    m_signalingThread->Start();
 
     rtc::InitializeSSL();
 
     m_peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
-        m_workerThread.get() /* network_thread */,
-        m_workerThread.get() /* worker_thread */,
-        m_signalingThread.get(),
-        nullptr /* default_adm */,
-        CreateBuiltinAudioEncoderFactory(),
-        CreateBuiltinAudioDecoderFactory(),
-        CreateBuiltinVideoEncoderFactory(),
-        CreateBuiltinVideoDecoderFactory(),
-        nullptr /* audio_mixer */,
-        nullptr /* audio_processing */);
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr,
+        nullptr);
 
     if (!m_peerConnectionFactory)
     {

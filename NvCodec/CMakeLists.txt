@@ -10,6 +10,7 @@ set(NVCODEC_INCLUDE_DIR
 file(GLOB sources ${NVCODEC_UTIL_DIR}/* ${NVENC_DIR}/* ${NVDEC_DIR}/*)
 
 add_library(NvCodec STATIC ${sources})
+        # ../Tests/TestWebrtc/main.cpp)
 
 # Delayload on linux
 if(Linux)

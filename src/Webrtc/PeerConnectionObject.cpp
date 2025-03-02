@@ -52,8 +52,9 @@ RTCErrorType PeerConnectionObject::SetLocalDescription(
     std::string& error)
 {
     SdpParseError error_;
-    std::unique_ptr<SessionDescriptionInterface> _desc =
-        CreateSessionDescription(ConvertSdpType(desc.type), desc.sdp, &error_);
+    std::unique_ptr<SessionDescriptionInterface> _desc;
+//    =
+//        CreateSessionDescription(ConvertSdpType(desc.type), desc.sdp, &error_);
     if (!_desc)
     {
         error = error_.description;
@@ -74,8 +75,9 @@ RTCErrorType PeerConnectionObject::SetRemoteDescription(
     std::string& error)
 {
     SdpParseError error_;
-    std::unique_ptr<SessionDescriptionInterface> _desc =
-        CreateSessionDescription(ConvertSdpType(desc.type), desc.sdp, &error_);
+    std::unique_ptr<SessionDescriptionInterface> _desc ;
+//    =
+//        CreateSessionDescription(ConvertSdpType(desc.type), desc.sdp, &error_);
     if (!_desc)
     {
         error = error_.description;
