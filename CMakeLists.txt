@@ -36,4 +36,5 @@ find_package(Vulkan REQUIRED)
 
 add_subdirectory(NvCodec)
 add_subdirectory(src)
+add_subdirectory(DLLInjection)
 # add_subdirectory(Tests)
